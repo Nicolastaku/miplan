@@ -2,12 +2,21 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Plan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Rutina</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0a0a" id="themeColorMeta">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rutina">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<link rel="icon" type="image/png" href="/static/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+
 <style>
-  /* ============================================================
-     TEMAS · variables por defecto (TLOU)
-     ============================================================ */
   :root {
     --bg: #0a0a0a; --surface: #141210; --surface-2: #1a1714;
     --surface-3: #24201c; --border: #2e2721; --border-hi: #3d342c;
@@ -15,13 +24,9 @@
     --accent: #7a8b6a; --accent-hi: #95a584;
     --green: #6b8f5a; --yellow: #b89a4a; --red: #a04a3a; --purple: #7a6a8a;
     --orange: #b87840; --radius: 10px; --radius-sm: 7px;
-    --planta-opacity: 0.16;
     --grain-opacity: 0.04;
   }
 
-  /* ============================================================
-     TEMAS · cada uno redefine variables
-     ============================================================ */
   body.theme-tlou {
     --bg: #0a0a0a; --surface: #141210; --surface-2: #1a1714;
     --surface-3: #24201c; --border: #2e2721; --border-hi: #3d342c;
@@ -124,7 +129,6 @@
     transition: background 0.3s ease, color 0.3s ease;
   }
 
-  /* grain solo cuando el tema lo activa (TLOU) */
   body::after {
     content: '';
     position: fixed; inset: 0;
@@ -149,9 +153,6 @@
 
   .app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-  /* ============================================================
-     HEADER
-     ============================================================ */
   .top {
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
@@ -166,9 +167,7 @@
   body.theme-tlou .top::before {
     content: '';
     position: absolute; inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.5;
+    pointer-events: none; z-index: 0; opacity: 0.5;
     background:
       radial-gradient(ellipse at 0% 50%, rgba(80, 90, 70, 0.15) 0%, transparent 40%),
       radial-gradient(ellipse at 100% 0%, rgba(60, 50, 40, 0.1) 0%, transparent 30%);
@@ -191,20 +190,6 @@
   .save-indicator.saving { color: var(--yellow); background: rgba(184,154,74,0.1); }
   .save-indicator.saved { color: var(--green); background: rgba(107,143,90,0.1); }
 
-  .btn-icon {
-    width: 36px; height: 36px;
-    background: var(--surface-2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text-dim);
-    cursor: pointer; font-size: 15px; font-family: inherit;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: all 0.15s; position: relative;
-  }
-  .btn-icon:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-hi); }
-  .btn-icon.activo { color: var(--green); border-color: var(--green); background: rgba(107,143,90,0.08); }
-
-  /* ============================================================
-     STATS
-     ============================================================ */
   .stats-mini { display: flex; gap: 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; transition: background 0.3s, border-color 0.3s; }
   .stat-mini { text-align: center; }
   .stat-mini .v { font-size: 20px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -222,9 +207,6 @@
   .view.active { display: block; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ============================================================
-     CARDS
-     ============================================================ */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -237,11 +219,8 @@
   }
   body.theme-tlou .card::before {
     content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.7;
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 0; opacity: 0.7;
     background:
       radial-gradient(ellipse at 0% 0%, rgba(70, 80, 60, 0.08) 0%, transparent 35%),
       radial-gradient(ellipse at 100% 100%, rgba(50, 40, 30, 0.06) 0%, transparent 40%);
@@ -285,10 +264,7 @@
   .check-item input:checked ~ .text { color: var(--text-mute); text-decoration: line-through; }
   .check-item .text { flex: 1; transition: color 0.15s; }
   .check-item .time-hint { font-size: 11px; color: var(--text-mute); font-variant-numeric: tabular-nums; font-family: 'SF Mono', Monaco, monospace; }
-  .check-item .task-actions {
-    opacity: 0; display: flex; gap: 4px;
-    transition: opacity 0.15s;
-  }
+  .check-item .task-actions { opacity: 0; display: flex; gap: 4px; transition: opacity 0.15s; }
   .check-item:hover .task-actions { opacity: 1; }
   .check-item .task-actions button {
     background: transparent; border: 1px solid transparent;
@@ -352,9 +328,6 @@
   .hist-row .hist-pct { font-weight: 700; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
   .hist-empty { text-align: center; padding: 40px 20px; color: var(--text-dim); }
 
-  /* ============================================================
-     TEMAS · selector
-     ============================================================ */
   .temas-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -447,17 +420,56 @@
   .modal-box .row button.save { background: var(--surface-3); color: var(--text); border: 1px solid var(--border-hi); }
   .modal-box .row button.save:hover { background: var(--border); }
 
+  /* ============================================================
+     MOBILE / TOUCH
+     ============================================================ */
   @media (max-width: 640px) {
-    .app { padding: 12px; }
-    .top h1 { font-size: 17px; }
-    .stat-mini .v { font-size: 16px; }
-    .stats-mini { padding: 8px 12px; gap: 12px; }
+    * { touch-action: manipulation; }
+
+    .app {
+      padding-left: max(12px, env(safe-area-inset-left));
+      padding-right: max(12px, env(safe-area-inset-right));
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+
+    .top { padding: 14px 16px; }
+    .top h1 { font-size: 18px; }
+    .top h1 .logo { width: 36px; height: 36px; font-size: 17px; }
+    .logout-btn { padding: 10px 16px; font-size: 14px; min-height: 40px; }
+
+    .stats-mini { padding: 12px 14px; gap: 12px; }
+    .stat-mini .v { font-size: 22px; }
+
+    .tab { padding: 11px 16px; font-size: 14px; min-height: 44px; }
+
+    .check-item { padding: 14px 12px; min-height: 52px; }
+    .check-item .box { width: 22px; height: 22px; }
+    .check-item .box svg { width: 14px; height: 14px; }
+    .check-item .text { font-size: 15px; }
+    .check-item .time-hint { font-size: 12px; }
+    .check-item .task-actions { opacity: 1; }
+    .check-item .task-actions button { padding: 8px 12px; font-size: 14px; }
+
+    .mercado-add input { padding: 12px 14px; font-size: 15px; min-height: 48px; }
+    .mercado-add button { padding: 12px 18px; font-size: 15px; min-height: 48px; }
+    .setting-row input[type="time"], .setting-row input[type="number"] { padding: 10px 12px; font-size: 15px; min-height: 44px; }
+    .modal-box input, .modal-box select { padding: 14px 14px; font-size: 16px; min-height: 48px; }
+    .modal-box .row button { padding: 12px 20px; font-size: 15px; min-height: 44px; }
+    .section-title .add-task-btn { padding: 6px 12px; font-size: 13px; min-height: 34px; }
+
+    input, select, textarea { font-size: 16px; }
+
+    .temas-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+    .tema-card { padding: 8px; }
+    .tema-preview { height: 32px; }
+    .tema-nombre { font-size: 10px; }
+
     .day { aspect-ratio: auto; min-height: 56px; }
-    .tab { padding: 8px 12px; font-size: 12px; }
-    .card { padding: 16px; }
     .day-header .date { font-size: 20px; }
-    .temas-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+    .card { padding: 16px; }
   }
+
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 4px; }
@@ -492,7 +504,7 @@
 
   <div class="top">
     <div>
-      <h1><span class="logo">❖</span> Mi Plan</h1>
+      <h1><span class="logo">❖</span> Rutina</h1>
       <div class="sub" id="subToday">—</div>
     </div>
     <div class="top-actions">
@@ -605,7 +617,15 @@
         </select>
       </div>
       <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-top:12px;">
-        El ambiente es independiente del tema. Puedes tener tema claro con micelio, o tema TLOU sin ambiente. Se apaga con "Apagado".
+        El ambiente es independiente del tema. Puedes tener tema claro con micelio, o tema TLOU sin ambiente.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Instalación</h2>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.7;">
+        <p style="margin-bottom:8px;"><strong style="color:var(--text);">Android:</strong> Chrome → menú ⋮ → "Instalar aplicación" o "Añadir a pantalla de inicio".</p>
+        <p><strong style="color:var(--text);">iPhone:</strong> Safari → botón Compartir → "Añadir a pantalla de inicio".</p>
       </div>
     </div>
   </div>
@@ -633,12 +653,29 @@ const TEMAS = [
 
 const VALID_TEMAS = TEMAS.map(t => t.id);
 
+const THEME_COLORS = {
+  tlou:          '#0a0a0a',
+  light:         '#f5f7fa',
+  vscode:        '#1e1e1e',
+  dracula:       '#282a36',
+  nord:          '#2e3440',
+  tokyo:         '#1a1b26',
+  catppuccin:    '#1e1e2e',
+  onedark:       '#21252b',
+  'unifi-light': '#f7f9fc',
+  synthwave:     '#241b2f',
+};
+
 function aplicarTema(id) {
   if (!VALID_TEMAS.includes(id)) id = 'tlou';
   document.body.classList.remove(...VALID_TEMAS.map(t => 'theme-' + t));
   document.body.classList.add('theme-' + id);
   localStorage.setItem('tema', id);
-  // Guardar en Supabase (settings) para sync entre dispositivos
+
+  const color = THEME_COLORS[id] || '#0a0a0a';
+  const meta = document.getElementById('themeColorMeta');
+  if (meta) meta.setAttribute('content', color);
+
   try {
     api('/api/settings', { method: 'PUT', body: JSON.stringify({ tema: id }) });
   } catch (e) {}
@@ -1041,7 +1078,6 @@ function setupSettings() {
     });
   });
 
-  // Selector de modo de ambiente
   const sel = document.getElementById('ambModeSelect');
   if (sel) {
     sel.addEventListener('change', () => {
@@ -1052,9 +1088,6 @@ function setupSettings() {
   }
 }
 
-// ============================================================
-// TAREAS CRUD
-// ============================================================
 function abrirTaskModal(seccion) {
   editingTaskId = null;
   document.getElementById('taskModalTitle').textContent = 'Nueva tarea';
@@ -1160,7 +1193,6 @@ function showToast(msg) {
 }
 
 async function init() {
-  // Aplicar tema guardado localmente primero (para evitar flash)
   aplicarTema(localStorage.getItem('tema') || 'tlou');
 
   try {
@@ -1173,12 +1205,10 @@ async function init() {
     DB.settings = settings || {};
     DB.tareas = tareas || [];
 
-    // Si el server tiene un tema guardado, úsalo
     if (DB.settings.tema && VALID_TEMAS.includes(DB.settings.tema)) {
       aplicarTema(DB.settings.tema);
     }
 
-    // Sembrar tareas por defecto si no hay
     if (DB.tareas.length === 0) {
       for (const sec of ['manana', 'trabajo', 'tarde', 'noche']) {
         for (const t of DEFAULT_TAREAS[sec]) {
@@ -1193,7 +1223,6 @@ async function init() {
       }
     }
 
-    // Sembrar mercado por defecto
     if (DB.mercado.length === 0) {
       for (const item of DEFAULT_MERCADO) {
         try {
@@ -1203,7 +1232,7 @@ async function init() {
       }
     }
   } catch (e) {
-    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#8a7f70;">Error cargando datos. <a href="/login" style="color:#7a8b6a;">Volver a entrar</a></div>';
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);">Error cargando datos. <a href="/login" style="color:var(--accent);">Volver a entrar</a></div>';
     return;
   }
 
@@ -1252,38 +1281,27 @@ async function init() {
 }
 
 // ============================================================
-// AMBIENTE TLOU · independiente del tema
+// AMBIENTE
 // ============================================================
 (function initAmbiente() {
   const canvas = document.getElementById('ambienteCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-
   const MODOS = ['off', 'A', 'B', 'C'];
   let modo = localStorage.getItem('amb_modo') || 'off';
   if (!MODOS.includes(modo)) modo = 'off';
 
-  let racha = 0;
-  let rachaAnimada = 0;
-  let tiempo = 0;
+  let racha = 0, rachaAnimada = 0, tiempo = 0;
   let dpr = window.devicePixelRatio || 1;
   let ancho = 0, alto = 0;
-  let animId = null;
-  let estructura = null;
-  let semilla = 12345;
+  let animId = null, estructura = null, semilla = 12345;
 
-  function rng() {
-    semilla = (semilla * 9301 + 49297) % 233280;
-    return semilla / 233280;
-  }
-  function setSemilla(n) {
-    semilla = ((n * 7919 + 104729) % 233280) || 12345;
-  }
+  function rng() { semilla = (semilla * 9301 + 49297) % 233280; return semilla / 233280; }
+  function setSemilla(n) { semilla = ((n * 7919 + 104729) % 233280) || 12345; }
 
   function resize() {
     dpr = window.devicePixelRatio || 1;
-    ancho = window.innerWidth;
-    alto = window.innerHeight;
+    ancho = window.innerWidth; alto = window.innerHeight;
     canvas.width = Math.round(ancho * dpr);
     canvas.height = Math.round(alto * dpr);
     canvas.style.width = ancho + 'px';
@@ -1549,29 +1567,12 @@ async function init() {
     if (animId) { cancelAnimationFrame(animId); animId = null; }
   }
 
-  window.addEventListener('resize', () => {
-    if (modo !== 'off') resize();
-  });
+  window.addEventListener('resize', () => { if (modo !== 'off') resize(); });
 
   window.Ambiente = {
-    setRacha(n) {
-      racha = Math.max(0, Math.floor(n));
-      if (modo !== 'off') start();
-    },
-    setModo(m) {
-      modo = m;
-      localStorage.setItem('amb_modo', m);
-      start();
-    },
-    toggle() {
-      if (modo === 'off') {
-        modo = 'A';
-      } else {
-        modo = 'off';
-      }
-      localStorage.setItem('amb_modo', modo);
-      start();
-    },
+    setRacha(n) { racha = Math.max(0, Math.floor(n)); if (modo !== 'off') start(); },
+    setModo(m) { modo = m; localStorage.setItem('amb_modo', m); start(); },
+    toggle() { modo = modo === 'off' ? 'A' : 'off'; localStorage.setItem('amb_modo', modo); start(); },
     getModo() { return modo; }
   };
 })();
@@ -1596,6 +1597,23 @@ function actualizarAmbienteUI() {
     sel.style.opacity = modo === 'off' ? '0.5' : '1';
     if (modo !== 'off') sel.value = modo;
   }
+}
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('✓ Service Worker registrado:', reg.scope))
+      .catch(err => console.log('✗ SW error:', err));
+  });
+}
+
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                     window.navigator.standalone === true;
+if (isStandalone) {
+  document.documentElement.classList.add('pwa-mode');
 }
 
 document.addEventListener('DOMContentLoaded', init);

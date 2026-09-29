@@ -20,7 +20,7 @@ ADMIN_PASSWORD_PLAIN = os.environ.get('ADMIN_PASSWORD', 'cambiar123')
 
 SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_urlsafe(32)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -33,26 +33,14 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=90)
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
 
-print("=" * 60)
-print("DEBUG SUPABASE_URL:", repr(SUPABASE_URL))
-print("DEBUG SUPABASE_KEY (primeros 30):", repr(SUPABASE_KEY[:30]))
-print("DEBUG SUPABASE_KEY (últimos 10):", repr(SUPABASE_KEY[-10:]))
-print("DEBUG SUPABASE_KEY length:", len(SUPABASE_KEY))
-print("=" * 60)
-
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_KEY")
 
 if not SUPABASE_URL.startswith('https://') or len(SUPABASE_URL) < 20:
     raise RuntimeError(f"SUPABASE_URL inválida: {SUPABASE_URL!r}")
 
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    print("✅ Cliente Supabase creado correctamente")
-except Exception as e:
-    print("❌ ERROR creando cliente Supabase:", repr(e))
-    traceback.print_exc()
-    raise
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+print("✅ Cliente Supabase creado correctamente")
 
 # ============================================================
 # AUTH
@@ -88,34 +76,44 @@ def login():
         error = 'Usuario o contraseña incorrectos'
     return '''<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login · Mi Plan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Rutina · Login</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rutina">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<link rel="icon" type="image/png" href="/static/icon-192.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, sans-serif; background: #0a0a0a; color: #d8d0c4;
-         min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+         min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+         touch-action: manipulation; }
   .box { background: #141210; border: 1px solid #2e2721; border-radius: 12px;
-         padding: 32px; width: 100%; max-width: 380px;
+         padding: 32px 28px; width: 100%; max-width: 380px;
          box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
   h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.02em; }
   h1::before { content: '❖ '; color: #7a8b6a; }
   .sub { color: #8a7f70; font-size: 13px; margin-bottom: 24px; }
   label { font-size: 11px; color: #8a7f70; font-weight: 600; text-transform: uppercase;
           letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
-  input { width: 100%; padding: 11px 14px; background: #0a0a0a; color: #d8d0c4;
-          border: 1px solid #2e2721; border-radius: 8px; font-size: 14px;
+  input { width: 100%; padding: 14px 14px; background: #0a0a0a; color: #d8d0c4;
+          border: 1px solid #2e2721; border-radius: 8px; font-size: 16px;
           margin-bottom: 16px; font-family: inherit; }
   input:focus { outline: none; border-color: #7a8b6a; }
-  button { width: 100%; padding: 12px; background: #4a5540; color: #d8d0c4;
-           border: 1px solid #5a6550; border-radius: 8px; font-size: 14px; font-weight: 600;
-           font-family: inherit; cursor: pointer; transition: background 0.15s; }
+  button { width: 100%; padding: 14px; background: #4a5540; color: #d8d0c4;
+           border: 1px solid #5a6550; border-radius: 8px; font-size: 15px; font-weight: 600;
+           font-family: inherit; cursor: pointer; transition: background 0.15s;
+           touch-action: manipulation; }
   button:hover { background: #5a6550; }
+  button:active { transform: scale(0.98); }
   .err { color: #a04a3a; font-size: 13px; margin-bottom: 14px; padding: 10px;
          background: rgba(160,74,58,0.1); border-radius: 6px; text-align: center;
          border: 1px solid rgba(160,74,58,0.3); }
 </style></head>
 <body><div class="box">
-  <h1>Mi Plan</h1>
+  <h1>Rutina</h1>
   <div class="sub">Inicia sesión para continuar</div>
   ''' + (f'<div class="err">{error}</div>' if error else '') + '''
   <form method="post">
@@ -136,6 +134,21 @@ def logout():
 @login_required
 def index():
     return render_template('index.html')
+
+# ============================================================
+# PWA
+# ============================================================
+@app.route('/manifest.json')
+def manifest():
+    return app.send_static_file('manifest.json')
+
+@app.route('/sw.js')
+def service_worker():
+    response = app.send_static_file('sw.js')
+    response.headers['Content-Type'] = 'application/javascript'
+    response.headers['Service-Worker-Allowed'] = '/'
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
 
 # ============================================================
 # API · DÍAS
@@ -379,8 +392,6 @@ def health():
         supabase.table('days').select('date').limit(1).execute()
         return jsonify({'ok': True, 'db': 'connected'})
     except Exception as e:
-        print("❌ ERROR en /api/health:")
-        traceback.print_exc()
         return jsonify({'ok': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
