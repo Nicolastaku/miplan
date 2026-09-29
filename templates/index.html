@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Plan</title>
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #141210; --surface-2: #1a1714;
+    --surface-3: #24201c; --border: #2e2721; --border-hi: #3d342c;
+    --text: #d8d0c4; --text-dim: #8a7f70; --text-mute: #5a5148;
+    --accent: #7a8b6a; --accent-hi: #95a584;
+    --green: #6b8f5a; --yellow: #b89a4a; --red: #a04a3a; --purple: #7a6a8a;
+    --orange: #b87840; --radius: 10px; --radius-sm: 7px;
+    --amb-opacity: 0.14;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5; font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* textura sutil tipo papel/grano encima de todo */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #ambienteCanvas {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+  #ambienteCanvas.activa { opacity: var(--amb-opacity); }
+
+  body.amb-A { --amb-opacity: 0.16; }
+  body.amb-B { --amb-opacity: 0.18; }
+  body.amb-C { --amb-opacity: 0.22; }
+
+  .app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
+  .top {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+  }
+  .top::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+    background:
+      radial-gradient(ellipse at 0% 50%, rgba(80, 90, 70, 0.15) 0%, transparent 40%),
+      radial-gradient(ellipse at 100% 0%, rgba(60, 50, 40, 0.1) 0%, transparent 30%);
+  }
+  .top > * { position: relative; z-index: 1; }
+
+  .top h1 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; letter-spacing: 0.02em; }
+  .top h1 .logo {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: linear-gradient(135deg, #4a5540, #2a2e24);
+    border: 1px solid #3a4030;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .top .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.03em; }
+  .top-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .logout-btn { padding: 7px 14px; background: transparent; color: var(--text-dim); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 12px; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+  .logout-btn:hover { color: var(--red); border-color: var(--red); }
+  .save-indicator { font-size: 11px; color: var(--text-mute); padding: 4px 10px; border-radius: 6px; transition: all 0.3s; }
+  .save-indicator.saving { color: var(--yellow); background: rgba(184,154,74,0.1); }
+  .save-indicator.saved { color: var(--green); background: rgba(107,143,90,0.1); }
+
+  .btn-icon {
+    width: 36px; height: 36px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text-dim);
+    cursor: pointer; font-size: 15px; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.15s; position: relative;
+  }
+  .btn-icon:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-hi); }
+  .btn-icon.activo { color: var(--green); border-color: var(--green); background: rgba(107,143,90,0.08); }
+
+  .amb-btn .modo-badge {
+    position: absolute; bottom: -3px; right: -3px;
+    background: var(--accent); color: #0a0a0a;
+    font-size: 8px; font-weight: 700;
+    width: 15px; height: 15px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg);
+  }
+
+  /* ============================================================
+     STATS
+     ============================================================ */
+  .stats-mini { display: flex; gap: 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; }
+  .stat-mini { text-align: center; }
+  .stat-mini .v { font-size: 20px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat-mini .l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+  .stat-mini.streak .v { color: var(--orange); }
+  .stat-mini.today .v { color: var(--accent-hi); }
+  .stat-mini.week .v { color: var(--green); }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); padding: 5px; border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--border); }
+  .tab { padding: 9px 16px; border: none; background: transparent; color: var(--text-dim); font-size: 13px; font-weight: 500; font-family: inherit; border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .tab:hover { color: var(--text); background: var(--surface-2); }
+  .tab.active { background: #2e3424; color: var(--text); border: 1px solid #3d4430; }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ============================================================
+     CARDS con decoración TLOU
+     ============================================================ */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(70, 80, 60, 0.08) 0%, transparent 35%),
+      radial-gradient(ellipse at 100% 100%, rgba(50, 40, 30, 0.06) 0%, transparent 40%);
+  }
+  .card > * { position: relative; z-index: 1; }
+
+  .card h2 { font-size: 12px; font-weight: 700; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: '◆'; color: var(--accent); font-size: 10px; }
+
+  .day-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .day-header .date { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+  .day-header .dow { font-size: 13px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.04em; }
+  .progress-text { font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .progress-bar { height: 5px; background: var(--surface-3); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+  .progress-bar .fill { height: 100%; background: linear-gradient(90deg, #4a5540, #6a7a58); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+
+  .sections { display: flex; flex-direction: column; gap: 20px; }
+  .section { background: var(--surface-2); border-radius: var(--radius-sm); padding: 14px 16px; position: relative; }
+  .section-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .section.manana .dot { background: #b89a4a; }
+  .section.trabajo .dot { background: #a04a3a; }
+  .section.tarde .dot { background: #7a8b6a; }
+  .section.noche .dot { background: #7a6a8a; }
+  .section-title .add-task-btn {
+    margin-left: auto;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 5px;
+    padding: 3px 9px; font-size: 11px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .section-title .add-task-btn:hover { color: var(--accent-hi); border-color: var(--accent); background: rgba(122,139,106,0.08); }
+
+  .check-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; font-size: 13px; user-select: none; position: relative; }
+  .check-item:hover { background: var(--surface-3); }
+  .check-item input { display: none; }
+  .check-item .box { width: 18px; height: 18px; border: 2px solid var(--border-hi); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .check-item .box svg { width: 11px; height: 11px; opacity: 0; transition: opacity 0.15s; stroke: white; stroke-width: 3; fill: none; }
+  .check-item input:checked ~ .box { background: var(--green); border-color: var(--green); }
+  .check-item input:checked ~ .box svg { opacity: 1; }
+  .check-item input:checked ~ .text { color: var(--text-mute); text-decoration: line-through; }
+  .check-item .text { flex: 1; transition: color 0.15s; }
+  .check-item .time-hint { font-size: 11px; color: var(--text-mute); font-variant-numeric: tabular-nums; font-family: 'SF Mono', Monaco, monospace; }
+  .check-item .task-actions {
+    opacity: 0; display: flex; gap: 4px;
+    transition: opacity 0.15s;
+  }
+  .check-item:hover .task-actions { opacity: 1; }
+  .check-item .task-actions button {
+    background: transparent; border: 1px solid transparent;
+    color: var(--text-mute); border-radius: 4px;
+    padding: 2px 6px; font-size: 11px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .check-item .task-actions button:hover { color: var(--text); background: var(--surface-3); border-color: var(--border-hi); }
+  .check-item .task-actions button.del:hover { color: var(--red); border-color: var(--red); }
+
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+  .month-nav { display: flex; align-items: center; gap: 8px; }
+  .month-nav button { min-width: 32px; height: 32px; padding: 0 12px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: var(--radius-sm); cursor: pointer; font-size: 16px; font-family: inherit; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .month-nav button:hover { background: var(--surface-3); border-color: var(--border-hi); }
+  .month-label { font-size: 15px; font-weight: 600; min-width: 160px; text-align: center; text-transform: capitalize; letter-spacing: 0.04em; }
+
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .dow-label { text-align: center; font-size: 11px; font-weight: 600; color: var(--text-dim); padding: 6px 0; text-transform: uppercase; letter-spacing: 0.08em; }
+  .day { aspect-ratio: 1; background: var(--surface-2); border-radius: var(--radius-sm); border: 1.5px solid transparent; padding: 6px; cursor: pointer; display: flex; flex-direction: column; transition: all 0.15s; overflow: hidden; }
+  .day:hover { background: var(--surface-3); border-color: var(--border-hi); }
+  .day.out { opacity: 0.2; cursor: default; }
+  .day.today { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(122,139,106,0.12); }
+  .day .num { font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; align-items: flex-start; }
+  .day .pct { font-size: 9px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .day .mini-bar { margin-top: auto; height: 4px; background: var(--surface-3); border-radius: 2px; overflow: hidden; }
+  .day .mini-bar .fill { height: 100%; transition: width 0.3s; }
+  .day.p0 .pct { color: var(--text-mute); }
+  .day.p1 .pct { color: var(--red); }
+  .day.p2 .pct { color: var(--yellow); }
+  .day.p3 .pct { color: var(--green); }
+
+  .mercado-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .mercado-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface-2); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; font-size: 13px; user-select: none; position: relative; }
+  .mercado-item:hover { background: var(--surface-3); }
+  .mercado-item input { display: none; }
+  .mercado-item .box { width: 16px; height: 16px; border: 2px solid var(--border-hi); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .mercado-item .box svg { width: 10px; height: 10px; opacity: 0; stroke: white; stroke-width: 3; fill: none; }
+  .mercado-item input:checked ~ .box { background: var(--green); border-color: var(--green); }
+  .mercado-item input:checked ~ .box svg { opacity: 1; }
+  .mercado-item input:checked ~ span { color: var(--text-mute); text-decoration: line-through; }
+  .mercado-item .del { opacity: 0; position: absolute; right: 8px; background: none; border: none; color: var(--red); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s; }
+  .mercado-item:hover .del { opacity: 1; }
+  .mercado-item .del:hover { background: rgba(160,74,58,0.15); }
+  .mercado-add { display: flex; gap: 8px; margin-bottom: 14px; }
+  .mercado-add input { flex: 1; padding: 9px 14px; border: 1px solid var(--border); background: var(--surface-2); border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 13px; }
+  .mercado-add input:focus { outline: none; border-color: var(--accent); }
+  .mercado-add button { padding: 9px 16px; background: #3a4030; color: var(--text); border: 1px solid #4a5040; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+  .mercado-add button:hover { background: #4a5040; }
+  .mercado-reset { padding: 6px 12px; background: transparent; color: var(--red); border: 1px solid var(--red); border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 12px; transition: all 0.15s; margin-top: 14px; }
+  .mercado-reset:hover { background: rgba(160,74,58,0.1); }
+
+  .notes-area { width: 100%; min-height: 400px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; resize: vertical; }
+  .notes-area:focus { outline: none; border-color: var(--accent); }
+  .notes-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-mute); margin-top: 8px; }
+
+  .hist-list { display: flex; flex-direction: column; gap: 8px; }
+  .hist-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface-2); border-radius: var(--radius-sm); font-size: 13px; }
+  .hist-row .hist-date { font-weight: 600; min-width: 110px; font-variant-numeric: tabular-nums; }
+  .hist-row .hist-bar { flex: 1; height: 6px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
+  .hist-row .hist-bar .fill { height: 100%; }
+  .hist-row .hist-pct { font-weight: 700; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+  .hist-empty { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+
+  .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row label { font-size: 13px; }
+  .setting-row input[type="time"], .setting-row input[type="number"] { padding: 7px 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 6px; font-family: inherit; font-size: 13px; }
+  .setting-row input:focus { outline: none; border-color: var(--accent); }
+
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,0.6); font-size: 13px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1000; max-width: 320px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .amb-menu {
+    position: fixed; top: 60px; right: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 6px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    z-index: 999; display: none; min-width: 280px;
+  }
+  .amb-menu.activo { display: block; animation: fadeIn 0.15s ease; }
+  .amb-menu-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: background 0.15s;
+    font-size: 13px;
+  }
+  .amb-menu-item:hover { background: var(--surface-2); }
+  .amb-menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .amb-menu-item .info { flex: 1; }
+  .amb-menu-item .nombre { font-weight: 600; color: var(--text); }
+  .amb-menu-item .desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .amb-menu-item .check { color: var(--accent); font-weight: 700; opacity: 0; }
+  .amb-menu-item.activo .check { opacity: 1; }
+
+  /* modal para agregar/editar tarea */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.activo { display: flex; animation: fadeIn 0.15s; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  }
+  .modal-box h3 { font-size: 16px; margin-bottom: 18px; font-weight: 700; letter-spacing: 0.02em; }
+  .modal-box label { display: block; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
+  .modal-box input, .modal-box select {
+    width: 100%; padding: 10px 12px; background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: inherit; font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .modal-box input:focus, .modal-box select:focus { outline: none; border-color: var(--accent); }
+  .modal-box .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+  .modal-box .row button { padding: 9px 18px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .modal-box .row button.cancel { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+  .modal-box .row button.cancel:hover { color: var(--text); border-color: var(--border-hi); }
+  .modal-box .row button.save { background: #4a5540; color: var(--text); border: 1px solid #5a6550; }
+  .modal-box .row button.save:hover { background: #5a6550; }
+
+  @media (max-width: 640px) {
+    .app { padding: 12px; }
+    .top h1 { font-size: 17px; }
+    .stat-mini .v { font-size: 16px; }
+    .stats-mini { padding: 8px 12px; gap: 12px; }
+    .day { aspect-ratio: auto; min-height: 56px; }
+    .tab { padding: 8px 12px; font-size: 12px; }
+    .card { padding: 16px; }
+    .day-header .date { font-size: 20px; }
+    .amb-menu { right: 12px; left: 12px; min-width: 0; }
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<canvas id="ambienteCanvas"></canvas>
+
+<div class="amb-menu" id="ambMenu">
+  <div class="amb-menu-item" data-modo="off">
+    <span class="icon">◌</span>
+    <div class="info"><div class="nombre">Apagado</div><div class="desc">Sin ambiente</div></div>
+    <span class="check">✓</span>
+  </div>
+  <div class="amb-menu-item" data-modo="A">
+    <span class="icon">🌾</span>
+    <div class="info"><div class="nombre">A · Micelio</div><div class="desc">Fibras ramificadas irregulares</div></div>
+    <span class="check">✓</span>
+  </div>
+  <div class="amb-menu-item" data-modo="B">
+    <span class="icon">🍄</span>
+    <div class="info"><div class="nombre">B · Cordyceps</div><div class="desc">Hongos brotando en racimos</div></div>
+    <span class="check">✓</span>
+  </div>
+  <div class="amb-menu-item" data-modo="C">
+    <span class="icon">🌫️</span>
+    <div class="info"><div class="nombre">C · Ambiente</div><div class="desc">Moho, esporas, penumbra</div></div>
+    <span class="check">✓</span>
+  </div>
+</div>
+
+<div class="modal-overlay" id="taskModal">
+  <div class="modal-box">
+    <h3 id="taskModalTitle">Nueva tarea</h3>
+    <label>Sección</label>
+    <select id="taskSection">
+      <option value="manana">Mañana</option>
+      <option value="trabajo">Trabajo</option>
+      <option value="tarde">Tarde</option>
+      <option value="noche">Noche</option>
+    </select>
+    <label>Descripción</label>
+    <input type="text" id="taskText" placeholder="Ej: Estudiar 1 hora" maxlength="120">
+    <label>Hora (opcional)</label>
+    <input type="text" id="taskTime" placeholder="Ej: 7:15" maxlength="10">
+    <div class="row">
+      <button class="cancel" onclick="cerrarTaskModal()">Cancelar</button>
+      <button class="save" onclick="guardarTaskModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <div class="top">
+    <div>
+      <h1><span class="logo">❖</span> Mi Plan</h1>
+      <div class="sub" id="subToday">—</div>
+    </div>
+    <div class="top-actions">
+      <span class="save-indicator" id="saveIndicator"></span>
+      <button class="btn-icon amb-btn" onclick="toggleAmbMenu(event)" id="ambBtn" title="Ambiente">
+        🍄
+        <span class="modo-badge" id="ambBadge" style="display:none;">·</span>
+      </button>
+      <a href="/logout" class="logout-btn">Salir</a>
+    </div>
+  </div>
+
+  <div class="stats-mini" style="margin-bottom:20px;">
+    <div class="stat-mini streak"><div class="v" id="statStreak">0</div><div class="l">Racha</div></div>
+    <div class="stat-mini today"><div class="v" id="statToday">0%</div><div class="l">Hoy</div></div>
+    <div class="stat-mini week"><div class="v" id="statWeek">0%</div><div class="l">Semana</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="hoy"><span>✓</span> Hoy</button>
+    <button class="tab" data-view="calendario"><span>▦</span> Calendario</button>
+    <button class="tab" data-view="historial"><span>▤</span> Historial</button>
+    <button class="tab" data-view="mercado"><span>◇</span> Mercado</button>
+    <button class="tab" data-view="notas"><span>✎</span> Notas</button>
+    <button class="tab" data-view="ajustes"><span>⚙</span> Ajustes</button>
+  </div>
+
+  <div class="view active" id="view-hoy">
+    <div class="card">
+      <div class="day-header">
+        <div>
+          <div class="date" id="hoyDate">—</div>
+          <div class="dow" id="hoyDow">—</div>
+        </div>
+        <div class="progress-text" id="hoyProgressText">0 de 0</div>
+      </div>
+      <div class="progress-bar"><div class="fill" id="hoyProgress"></div></div>
+      <div class="sections" id="hoySections"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-calendario">
+    <div class="card">
+      <div class="cal-header">
+        <h2 style="margin:0;">Calendario</h2>
+        <div class="month-nav">
+          <button id="prevMonth">‹</button>
+          <div class="month-label" id="monthLabel">—</div>
+          <button id="nextMonth">›</button>
+          <button id="todayBtn" style="font-size:12px;">Hoy</button>
+        </div>
+      </div>
+      <div class="cal" id="calGrid"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-historial">
+    <div class="card">
+      <h2>Últimos 30 días</h2>
+      <div class="hist-list" id="histList"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-mercado">
+    <div class="card">
+      <h2>Mercado semanal</h2>
+      <div class="mercado-add">
+        <input type="text" id="mercadoInput" placeholder="Agregar producto... (Enter)">
+        <button id="mercadoAddBtn">+ Agregar</button>
+      </div>
+      <div class="mercado-grid" id="mercadoGrid"></div>
+      <button class="mercado-reset" id="mercadoReset">Reiniciar mercado</button>
+    </div>
+  </div>
+
+  <div class="view" id="view-notas">
+    <div class="card">
+      <h2>Notas libres</h2>
+      <textarea class="notes-area" id="notesArea" placeholder="Escribe aquí lo que quieras..."></textarea>
+      <div class="notes-meta">
+        <span id="notesCount">0 caracteres</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-ajustes">
+    <div class="card">
+      <h2>Ajustes personales</h2>
+      <div class="setting-row"><label>Hora de despertar</label><input type="time" id="setWake" value="06:00"></div>
+      <div class="setting-row"><label>Hora de dormir</label><input type="time" id="setSleep" value="23:00"></div>
+      <div class="setting-row"><label>Hora de inicio de estudio</label><input type="time" id="setStudy" value="07:15"></div>
+      <div class="setting-row"><label>Duración del estudio (min)</label><input type="number" id="setStudyDur" value="60" min="15" max="180" step="5"></div>
+      <div class="setting-row"><label>Hora de entrada al trabajo</label><input type="time" id="setWorkStart" value="09:00"></div>
+      <div class="setting-row"><label>Hora de salida del trabajo</label><input type="time" id="setWorkEnd" value="19:00"></div>
+    </div>
+    <div class="card">
+      <h2>Ambiente</h2>
+      <div class="setting-row">
+        <label>Modo actual</label>
+        <button class="btn-icon" onclick="toggleAmbMenu(event)" style="width:auto;padding:0 14px;">Cambiar</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-top:8px;">
+        A: Micelio (fibras ramificadas) · B: Cordyceps (hongos brotando) · C: Ambiente (moho, esporas y penumbra).
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DEFAULT TAREAS (si la tabla está vacía)
+// ============================================================
+const DEFAULT_TAREAS = {
+  manana: [
+    { text: 'Desperté a la hora', time_hint: '' },
+    { text: 'Tomé agua antes del café', time_hint: '' },
+    { text: 'Me moví 20-30 min', time_hint: '6:15' },
+    { text: 'Desayuné algo real', time_hint: '6:45' },
+  ],
+  trabajo: [
+    { text: 'Estudié ciberseguridad (1 hora)', time_hint: '7:15' },
+    { text: 'Llevé lonchera al trabajo', time_hint: '8:30' },
+    { text: 'Entré al trabajo a la hora', time_hint: '9:00' },
+    { text: 'Almorcé sin saltarme la comida', time_hint: '13:00' },
+    { text: 'Caminé 10 min después de almorzar', time_hint: '13:45' },
+  ],
+  tarde: [
+    { text: 'Salí del trabajo a la hora', time_hint: '19:00' },
+    { text: '20 min sin pantalla al llegar', time_hint: '19:00' },
+    { text: 'Cené con calma', time_hint: '19:30' },
+  ],
+  noche: [
+    { text: 'Tuve tiempo libre real', time_hint: '20:30' },
+    { text: 'Repasé el estudio de la mañana', time_hint: '21:30' },
+    { text: 'Rutina de cierre (sin pantallas)', time_hint: '22:15' },
+    { text: 'Me acosté a la hora', time_hint: '23:00' },
+  ]
+};
+
+const DEFAULT_MERCADO = [
+  'Huevos', 'Arepa', 'Arroz', 'Pasta', 'Atún', 'Pollo', 'Carne molida',
+  'Lentejas o fríjoles', 'Cebolla', 'Tomate', 'Ajo', 'Zanahoria',
+  'Plátano', 'Manzana', 'Naranja', 'Queso', 'Pan',
+  'Aceite', 'Sal', 'Comino', 'Color', 'Salsas', 'Agua o bebida'
+];
+
+const DOW_ES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const DOW_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const MONTH_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const SECTION_LABELS = { manana: 'Mañana', trabajo: 'Trabajo', tarde: 'Tarde', noche: 'Noche' };
+
+let DB = { days: {}, mercado: [], notas: '', settings: {}, tareas: [] };
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
+let saveTimer = null;
+let editingTaskId = null;
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    ...opts,
+  });
+  if (r.status === 401) { location.href = '/login'; throw new Error('No auth'); }
+  if (!r.ok) throw new Error('API error ' + r.status);
+  return r.json();
+}
+
+function markSaving() {
+  const el = document.getElementById('saveIndicator');
+  el.textContent = '● guardando...';
+  el.className = 'save-indicator saving';
+}
+function markSaved() {
+  const el = document.getElementById('saveIndicator');
+  el.textContent = '✓ guardado';
+  el.className = 'save-indicator saved';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { el.textContent = ''; el.className = 'save-indicator'; }, 2000);
+}
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function dateKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function parseKey(k) {
+  const [y, m, d] = k.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function formatLong(d) {
+  return DOW_ES[d.getDay()] + ', ' + d.getDate() + ' de ' + MONTH_ES[d.getMonth()];
+}
+
+function getTareasPorSeccion(sec) {
+  return DB.tareas.filter(t => t.section === sec).sort((a, b) => (a.position || 0) - (b.position || 0));
+}
+function totalItems() {
+  return DB.tareas.length || 0;
+}
+function dayCompleted(key) {
+  const day = DB.days[key];
+  if (!day) return 0;
+  let c = 0;
+  for (const t of DB.tareas) {
+    if (day[t.id]) c++;
+  }
+  return c;
+}
+function dayPercent(key) {
+  const t = totalItems();
+  return t === 0 ? 0 : Math.round((dayCompleted(key) / t) * 100);
+}
+function calcStreak() {
+  let streak = 0;
+  const d = new Date();
+  while (streak < 3650) {
+    const pct = dayPercent(dateKey(d));
+    if (pct >= 60) { streak++; d.setDate(d.getDate() - 1); } else break;
+  }
+  return streak;
+}
+function calcWeekAvg() {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  let sum = 0, count = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    if (d > today) break;
+    sum += dayPercent(dateKey(d));
+    count++;
+  }
+  return count === 0 ? 0 : Math.round(sum / count);
+}
+
+function updateHeader() {
+  const now = new Date();
+  document.getElementById('subToday').textContent = formatLong(now);
+  const streak = calcStreak();
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statToday').textContent = dayPercent(todayKey()) + '%';
+  document.getElementById('statWeek').textContent = calcWeekAvg() + '%';
+  if (window.Ambiente) window.Ambiente.setRacha(streak);
+}
+
+function renderHoy() {
+  const key = todayKey();
+  const day = DB.days[key] || {};
+  const now = new Date();
+  document.getElementById('hoyDate').textContent = now.getDate() + ' de ' + MONTH_ES[now.getMonth()];
+  document.getElementById('hoyDow').textContent = DOW_ES[now.getDay()];
+
+  const container = document.getElementById('hoySections');
+  container.innerHTML = '';
+
+  ['manana', 'trabajo', 'tarde', 'noche'].forEach(secId => {
+    const items = getTareasPorSeccion(secId);
+    const el = document.createElement('div');
+    el.className = 'section ' + secId;
+    el.innerHTML = '<div class="section-title"><span class="dot"></span>' + SECTION_LABELS[secId] +
+      '<button class="add-task-btn" onclick="abrirTaskModal(\'' + secId + '\')">+ tarea</button></div>';
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:10px;font-size:12px;color:var(--text-mute);';
+      empty.textContent = 'Sin tareas. Toca "+ tarea" para agregar.';
+      el.appendChild(empty);
+    }
+
+    items.forEach(item => {
+      const checked = !!day[item.id];
+      const label = document.createElement('label');
+      label.className = 'check-item';
+      label.innerHTML =
+        '<input type="checkbox" data-id="' + item.id + '" ' + (checked ? 'checked' : '') + '>' +
+        '<span class="box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>' +
+        '<span class="text">' + escapeHtml(item.text) + '</span>' +
+        '<span class="time-hint">' + escapeHtml(item.time_hint || '') + '</span>' +
+        '<span class="task-actions">' +
+          '<button type="button" onclick="editarTask(event, ' + item.id + ')" title="Editar">✎</button>' +
+          '<button type="button" class="del" onclick="eliminarTask(event, ' + item.id + ')" title="Eliminar">✕</button>' +
+        '</span>';
+      label.querySelector('input').addEventListener('change', e => toggleItem(item.id, e.target.checked));
+      el.appendChild(label);
+    });
+
+    container.appendChild(el);
+  });
+
+  updateHoyProgress();
+}
+
+async function toggleItem(id, checked) {
+  const key = todayKey();
+  if (!DB.days[key]) DB.days[key] = {};
+  if (checked) DB.days[key][id] = true;
+  else delete DB.days[key][id];
+  if (Object.keys(DB.days[key]).length === 0) delete DB.days[key];
+  updateHoyProgress();
+  updateHeader();
+  markSaving();
+  try {
+    await api('/api/days/' + key, { method: 'PUT', body: JSON.stringify(DB.days[key] || {}) });
+    markSaved();
+  } catch (e) { showToast('Error guardando'); }
+}
+
+function updateHoyProgress() {
+  const key = todayKey();
+  const done = dayCompleted(key);
+  const total = totalItems();
+  const pct = total === 0 ? 0 : Math.round(done / total * 100);
+  document.getElementById('hoyProgress').style.width = pct + '%';
+  document.getElementById('hoyProgressText').textContent = done + ' de ' + total + ' · ' + pct + '%';
+}
+
+function renderCal() {
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  document.getElementById('monthLabel').textContent = MONTH_ES[calMonth] + ' ' + calYear;
+  DOW_SHORT.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'dow-label'; el.textContent = d;
+    grid.appendChild(el);
+  });
+  const first = new Date(calYear, calMonth, 1);
+  const startOffset = first.getDay() === 0 ? 6 : first.getDay() - 1;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  for (let i = 0; i < startOffset; i++) {
+    const el = document.createElement('div');
+    el.className = 'day out';
+    el.innerHTML = '<div class="num">' + (prevDays - startOffset + 1 + i) + '</div>';
+    grid.appendChild(el);
+  }
+  const todayK = todayKey();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(calYear, calMonth, d);
+    const key = dateKey(date);
+    const pct = dayPercent(key);
+    let pClass = 'p0';
+    if (pct >= 100) pClass = 'p3';
+    else if (pct >= 50) pClass = 'p2';
+    else if (pct > 0) pClass = 'p1';
+    const fillColor = pct >= 100 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : pct > 0 ? 'var(--red)' : 'var(--text-mute)';
+    const el = document.createElement('div');
+    el.className = 'day ' + pClass + (key === todayK ? ' today' : '');
+    el.innerHTML = '<div class="num"><span>' + d + '</span><span class="pct">' + (pct > 0 ? pct + '%' : '') + '</span></div>' +
+      '<div class="mini-bar"><div class="fill" style="width:' + pct + '%;background:' + fillColor + ';"></div></div>';
+    grid.appendChild(el);
+  }
+}
+
+function renderHistorial() {
+  const container = document.getElementById('histList');
+  container.innerHTML = '';
+  const days = [];
+  const today = new Date();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    days.push(dateKey(d));
+  }
+  const withData = days.filter(k => DB.days[k]);
+  if (withData.length === 0) {
+    container.innerHTML = '<div class="hist-empty">Aún no hay días registrados.</div>';
+    return;
+  }
+  withData.forEach(key => {
+    const pct = dayPercent(key);
+    const d = parseKey(key);
+    const color = pct >= 100 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+    const row = document.createElement('div');
+    row.className = 'hist-row';
+    row.innerHTML = '<div class="hist-date">' + DOW_SHORT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH_ES[d.getMonth()].slice(0,3) + '</div>' +
+      '<div class="hist-bar"><div class="fill" style="width:' + pct + '%;background:' + color + ';"></div></div>' +
+      '<div class="hist-pct" style="color:' + color + ';">' + pct + '%</div>';
+    container.appendChild(row);
+  });
+}
+
+function renderMercado() {
+  const grid = document.getElementById('mercadoGrid');
+  grid.innerHTML = '';
+  DB.mercado.forEach(item => {
+    const el = document.createElement('label');
+    el.className = 'mercado-item';
+    el.innerHTML = '<input type="checkbox" ' + (item.checked ? 'checked' : '') + '>' +
+      '<span class="box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>' +
+      '<span>' + escapeHtml(item.item) + '</span>' +
+      '<button class="del" title="Eliminar">✕</button>';
+    const chk = el.querySelector('input');
+    chk.addEventListener('change', async e => {
+      item.checked = e.target.checked ? 1 : 0;
+      markSaving();
+      try {
+        await api('/api/mercado/' + item.id, { method: 'PUT', body: JSON.stringify({ checked: item.checked }) });
+        markSaved();
+      } catch (err) { showToast('Error'); }
+    });
+    el.querySelector('.del').addEventListener('click', async e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!confirm('¿Eliminar "' + item.item + '"?')) return;
+      markSaving();
+      try {
+        await api('/api/mercado/' + item.id, { method: 'DELETE' });
+        DB.mercado = DB.mercado.filter(x => x.id !== item.id);
+        renderMercado();
+        markSaved();
+      } catch (err) { showToast('Error'); }
+    });
+    grid.appendChild(el);
+  });
+}
+
+async function addMercadoItem() {
+  const input = document.getElementById('mercadoInput');
+  const val = input.value.trim();
+  if (!val) return;
+  markSaving();
+  try {
+    const r = await api('/api/mercado', { method: 'POST', body: JSON.stringify({ item: val, custom: 1 }) });
+    DB.mercado.push({ id: r.id, item: val, custom: 1, checked: 0 });
+    renderMercado();
+    input.value = '';
+    markSaved();
+  } catch (err) { showToast('Ya existe o error'); }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let notasTimer = null;
+function renderNotas() {
+  const area = document.getElementById('notesArea');
+  area.value = DB.notas || '';
+  document.getElementById('notesCount').textContent = area.value.length + ' caracteres';
+}
+function setupNotas() {
+  const area = document.getElementById('notesArea');
+  area.addEventListener('input', () => {
+    DB.notas = area.value;
+    document.getElementById('notesCount').textContent = area.value.length + ' caracteres';
+    markSaving();
+    clearTimeout(notasTimer);
+    notasTimer = setTimeout(async () => {
+      try {
+        await api('/api/notas', { method: 'PUT', body: JSON.stringify({ content: DB.notas }) });
+        markSaved();
+      } catch (e) { showToast('Error guardando notas'); }
+    }, 800);
+  });
+}
+
+function renderAjustes() {
+  const s = DB.settings;
+  if (s.wake) document.getElementById('setWake').value = s.wake;
+  if (s.sleep) document.getElementById('setSleep').value = s.sleep;
+  if (s.study) document.getElementById('setStudy').value = s.study;
+  if (s.studyDur) document.getElementById('setStudyDur').value = s.studyDur;
+  if (s.workStart) document.getElementById('setWorkStart').value = s.workStart;
+  if (s.workEnd) document.getElementById('setWorkEnd').value = s.workEnd;
+}
+function setupSettings() {
+  const map = { setWake: 'wake', setSleep: 'sleep', setStudy: 'study', setStudyDur: 'studyDur', setWorkStart: 'workStart', setWorkEnd: 'workEnd' };
+  Object.keys(map).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', async () => {
+      DB.settings[map[id]] = el.value;
+      markSaving();
+      try {
+        await api('/api/settings', { method: 'PUT', body: JSON.stringify({ [map[id]]: el.value }) });
+        markSaved();
+      } catch (e) { showToast('Error'); }
+    });
+  });
+}
+
+// ============================================================
+// TAREAS CRUD
+// ============================================================
+function abrirTaskModal(seccion) {
+  editingTaskId = null;
+  document.getElementById('taskModalTitle').textContent = 'Nueva tarea';
+  document.getElementById('taskSection').value = seccion;
+  document.getElementById('taskText').value = '';
+  document.getElementById('taskTime').value = '';
+  document.getElementById('taskModal').classList.add('activo');
+  setTimeout(() => document.getElementById('taskText').focus(), 100);
+}
+
+function editarTask(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+  const t = DB.tareas.find(x => x.id === id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('taskModalTitle').textContent = 'Editar tarea';
+  document.getElementById('taskSection').value = t.section;
+  document.getElementById('taskText').value = t.text;
+  document.getElementById('taskTime').value = t.time_hint || '';
+  document.getElementById('taskModal').classList.add('activo');
+}
+
+async function eliminarTask(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+  const t = DB.tareas.find(x => x.id === id);
+  if (!t) return;
+  if (!confirm('¿Eliminar "' + t.text + '"?')) return;
+  markSaving();
+  try {
+    await api('/api/tareas/' + id, { method: 'DELETE' });
+    DB.tareas = DB.tareas.filter(x => x.id !== id);
+    for (const k in DB.days) {
+      if (DB.days[k] && DB.days[k][id]) {
+        delete DB.days[k][id];
+      }
+    }
+    renderHoy();
+    updateHeader();
+    markSaved();
+  } catch (e) { showToast('Error'); }
+}
+
+function cerrarTaskModal() {
+  document.getElementById('taskModal').classList.remove('activo');
+  editingTaskId = null;
+}
+
+async function guardarTaskModal() {
+  const section = document.getElementById('taskSection').value;
+  const text = document.getElementById('taskText').value.trim();
+  const time_hint = document.getElementById('taskTime').value.trim();
+  if (!text) { showToast('Falta la descripción'); return; }
+  markSaving();
+  try {
+    if (editingTaskId) {
+      await api('/api/tareas/' + editingTaskId, {
+        method: 'PUT',
+        body: JSON.stringify({ text, time_hint, section })
+      });
+      const t = DB.tareas.find(x => x.id === editingTaskId);
+      if (t) { t.text = text; t.time_hint = time_hint; t.section = section; }
+    } else {
+      const r = await api('/api/tareas', {
+        method: 'POST',
+        body: JSON.stringify({ section, text, time_hint })
+      });
+      DB.tareas.push(r);
+    }
+    renderHoy();
+    updateHeader();
+    cerrarTaskModal();
+    markSaved();
+  } catch (e) { showToast('Error guardando'); }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cerrarTaskModal();
+  if (e.key === 'Enter' && document.getElementById('taskModal').classList.contains('activo')) {
+    guardarTaskModal();
+  }
+});
+
+function switchView(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  if (name === 'hoy') renderHoy();
+  if (name === 'calendario') renderCal();
+  if (name === 'historial') renderHistorial();
+  if (name === 'mercado') renderMercado();
+  if (name === 'notas') renderNotas();
+  if (name === 'ajustes') renderAjustes();
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function init() {
+  try {
+    const [days, mercado, notas, settings, tareas] = await Promise.all([
+      api('/api/days'), api('/api/mercado'), api('/api/notas'), api('/api/settings'), api('/api/tareas'),
+    ]);
+    DB.days = days || {};
+    DB.mercado = mercado || [];
+    DB.notas = notas.content || '';
+    DB.settings = settings || {};
+    DB.tareas = tareas || [];
+
+    // Si no hay tareas, sembrar las por defecto
+    if (DB.tareas.length === 0) {
+      for (const sec of ['manana', 'trabajo', 'tarde', 'noche']) {
+        for (const t of DEFAULT_TAREAS[sec]) {
+          try {
+            const r = await api('/api/tareas', {
+              method: 'POST',
+              body: JSON.stringify({ section: sec, text: t.text, time_hint: t.time_hint })
+            });
+            DB.tareas.push(r);
+          } catch (e) {}
+        }
+      }
+    }
+
+    if (DB.mercado.length === 0) {
+      for (const item of DEFAULT_MERCADO) {
+        try {
+          const r = await api('/api/mercado', { method: 'POST', body: JSON.stringify({ item, custom: 0 }) });
+          DB.mercado.push({ id: r.id, item, custom: 0, checked: 0 });
+        } catch (e) {}
+      }
+    }
+  } catch (e) {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#8a7f70;">Error cargando datos. <a href="/login" style="color:#7a8b6a;">Volver a entrar</a></div>';
+    return;
+  }
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => switchView(t.dataset.view));
+  });
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCal();
+  });
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal();
+  });
+  document.getElementById('todayBtn').addEventListener('click', () => {
+    const now = new Date(); calMonth = now.getMonth(); calYear = now.getFullYear(); renderCal();
+  });
+  document.getElementById('mercadoAddBtn').addEventListener('click', addMercadoItem);
+  document.getElementById('mercadoInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addMercadoItem();
+  });
+  document.getElementById('mercadoReset').addEventListener('click', async () => {
+    if (!confirm('¿Desmarcar todo el mercado?')) return;
+    markSaving();
+    try {
+      await api('/api/mercado/reset', { method: 'POST' });
+      DB.mercado.forEach(i => i.checked = 0);
+      renderMercado();
+      markSaved();
+    } catch (e) { showToast('Error'); }
+  });
+  setupNotas();
+  setupSettings();
+  setupAmbiente();
+
+  updateHeader();
+  renderHoy();
+  renderCal();
+
+  setInterval(() => {
+    const sub = document.getElementById('subToday');
+    const now = new Date();
+    if (sub && sub.textContent !== formatLong(now)) {
+      updateHeader();
+      if (document.getElementById('view-hoy').classList.contains('active')) renderHoy();
+    }
+  }, 60000);
+}
+
+// ============================================================
+// AMBIENTE TLOU · A micelio, B cordyceps, C ambiente
+// ============================================================
+(function initAmbiente() {
+  const canvas = document.getElementById('ambienteCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const MODOS = ['off', 'A', 'B', 'C'];
+  let modo = localStorage.getItem('amb_modo') || 'A';
+  if (!MODOS.includes(modo)) modo = 'A';
+
+  let racha = 0;
+  let rachaAnimada = 0;
+  let tiempo = 0;
+  let dpr = window.devicePixelRatio || 1;
+  let ancho = 0, alto = 0;
+  let animId = null;
+  let estructura = null;
+  let semilla = 12345;
+
+  function rng() {
+    semilla = (semilla * 9301 + 49297) % 233280;
+    return semilla / 233280;
+  }
+  function setSemilla(n) {
+    semilla = ((n * 7919 + 104729) % 233280) || 12345;
+  }
+
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    ancho = window.innerWidth;
+    alto = window.innerHeight;
+    canvas.width = Math.round(ancho * dpr);
+    canvas.height = Math.round(alto * dpr);
+    canvas.style.width = ancho + 'px';
+    canvas.style.height = alto + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    regenerar();
+  }
+
+  // ------------------------------------------------------------
+  // A · MICELIO (fibras ramificadas irregulares, esquina sup-izq)
+  // ------------------------------------------------------------
+  function generarMicelio() {
+    setSemilla(Math.floor(rachaAnimada) * 100 + 13);
+    const nivel = Math.min(6, 1 + Math.floor(rachaAnimada / 10));
+    const ramas = [];
+    const origen = { x: -20, y: -20 };
+
+    function rama(x, y, ang, len, grosor, niv) {
+      if (niv > nivel || len < 6) return;
+      // 3 puntos con curvatura irregular
+      const segmentos = 3;
+      let cx = x, cy = y, ca = ang;
+      for (let s = 0; s < segmentos; s++) {
+        const segLen = len / segmentos;
+        const x2 = cx + Math.cos(ca) * segLen;
+        const y2 = cy + Math.sin(ca) * segLen;
+        ramas.push({ x1: cx, y1: cy, x2, y2, grosor: grosor * (1 - s * 0.15), niv });
+        cx = x2; cy = y2;
+        ca += (rng() - 0.5) * 0.6;
+      }
+      // Bifurcaciones irregulares
+      const numHijas = rng() > 0.5 ? 2 : 3;
+      for (let i = 0; i < numHijas; i++) {
+        const nuevaAng = ca + (rng() - 0.5) * 1.4;
+        const nuevaLen = len * (0.55 + rng() * 0.2);
+        const nuevoGrosor = Math.max(0.4, grosor * 0.6);
+        rama(cx, cy, nuevaAng, nuevaLen, nuevoGrosor, niv + 1);
+      }
+      // Pequeñas fibras laterales
+      if (rng() > 0.6) {
+        rama(cx, cy, ca + (rng() - 0.5) * 1.8, len * 0.35, Math.max(0.3, grosor * 0.4), niv + 1);
+      }
+    }
+
+    rama(origen.x, origen.y, Math.PI * 0.28, Math.min(ancho, alto) * 0.32, 2.6, 0);
+    rama(origen.x, origen.y, Math.PI * 0.05, Math.min(ancho, alto) * 0.28, 2.2, 0);
+    rama(origen.x, origen.y, Math.PI * 0.5, Math.min(ancho, alto) * 0.24, 2.0, 0);
+
+    // Esporas flotantes
+    const esporas = [];
+    const numEsporas = Math.min(80, 20 + rachaAnimada * 2);
+    for (let i = 0; i < numEsporas; i++) {
+      esporas.push({
+        x: rng() * ancho, y: rng() * alto,
+        vx: (rng() - 0.5) * 0.15, vy: -0.05 - rng() * 0.15,
+        r: 0.5 + rng() * 1.2, fase: rng() * Math.PI * 2,
+        alpha: 0.2 + rng() * 0.4
+      });
+    }
+
+    estructura = { tipo: 'micelio', ramas, esporas };
+  }
+
+  // ------------------------------------------------------------
+  // B · CORDYCEPS (racimos de hongos brotando)
+  // ------------------------------------------------------------
+  function generarCordyceps() {
+    setSemilla(Math.floor(rachaAnimada) * 100 + 29);
+    const numRacimos = Math.min(10, 2 + Math.floor(rachaAnimada / 8));
+    const racimos = [];
+
+    for (let r = 0; r < numRacimos; r++) {
+      // Distribuir alrededor de los bordes
+      const lado = Math.floor(rng() * 4);
+      let bx, by;
+      if (lado === 0) { bx = rng() * ancho; by = -10; }             // arriba
+      else if (lado === 1) { bx = rng() * ancho; by = alto + 10; }   // abajo
+      else if (lado === 2) { bx = -10; by = rng() * alto; }          // izq
+      else { bx = ancho + 10; by = rng() * alto; }                   // der
+
+      const numHongos = 3 + Math.floor(rng() * 5);
+      const hongos = [];
+      for (let h = 0; h < numHongos; h++) {
+        const ang = Math.atan2(alto / 2 - by, ancho / 2 - bx) + (rng() - 0.5) * 0.8;
+        const len = 20 + rng() * 50;
+        const capT = 6 + rng() * 8;
+        hongos.push({
+          x: bx, y: by,
+          ang, len, capT,
+          curvatura: (rng() - 0.5) * 0.4,
+          fase: rng() * Math.PI * 2
+        });
+      }
+      racimos.push({ hongos });
+    }
+
+    estructura = { tipo: 'cordyceps', racimos };
+  }
+
+  // ------------------------------------------------------------
+  // C · AMBIENTE (moho, manchas, esporas, penumbra)
+  // ------------------------------------------------------------
+  function generarAmbiente() {
+    setSemilla(Math.floor(rachaAnimada) * 100 + 47);
+    const manchas = [];
+    const numManchas = Math.min(20, 5 + Math.floor(rachaAnimada / 5));
+    for (let i = 0; i < numManchas; i++) {
+      const puntos = [];
+      const numPuntos = 5 + Math.floor(rng() * 6);
+      const cx = rng() * ancho;
+      const cy = rng() * alto;
+      const radio = 40 + rng() * 140;
+      for (let p = 0; p < numPuntos; p++) {
+        const ang = (p / numPuntos) * Math.PI * 2;
+        const r = radio * (0.6 + rng() * 0.6);
+        puntos.push({ x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r });
+      }
+      manchas.push({
+        puntos,
+        alpha: 0.05 + rng() * 0.12,
+        color: rng() > 0.5 ? [60, 70, 50] : [50, 45, 35]
+      });
+    }
+
+    const esporas = [];
+    const numEsporas = Math.min(120, 40 + rachaAnimada * 3);
+    for (let i = 0; i < numEsporas; i++) {
+      esporas.push({
+        x: rng() * ancho, y: rng() * alto,
+        vx: (rng() - 0.5) * 0.2, vy: -0.05 - rng() * 0.2,
+        r: 0.6 + rng() * 1.5, fase: rng() * Math.PI * 2,
+        alpha: 0.15 + rng() * 0.35
+      });
+    }
+
+    // Vetas oscuras
+    const vetas = [];
+    for (let i = 0; i < 6; i++) {
+      const y0 = rng() * alto;
+      vetas.push({
+        y: y0,
+        h: 10 + rng() * 40,
+        alpha: 0.03 + rng() * 0.06
+      });
+    }
+
+    estructura = { tipo: 'ambiente', manchas, esporas, vetas };
+  }
+
+  function regenerar() {
+    if (modo === 'off' || rachaAnimada <= 0) { estructura = null; return; }
+    if (modo === 'A') generarMicelio();
+    else if (modo === 'B') generarCordyceps();
+    else if (modo === 'C') generarAmbiente();
+  }
+
+  // ------------------------------------------------------------
+  // DIBUJAR
+  // ------------------------------------------------------------
+  function drawMicelio() {
+    if (!estructura) return;
+    const { ramas, esporas } = estructura;
+    const colorBase = [200, 210, 180];
+    const alphaBase = 0.5;
+
+    ramas.forEach(r => {
+      const p = r.niv / 6;
+      const alpha = alphaBase * (1 - p * 0.55);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(' + colorBase[0] + ',' + colorBase[1] + ',' + colorBase[2] + ',' + alpha + ')';
+      ctx.lineWidth = r.grosor;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(r.x1, r.y1);
+      ctx.lineTo(r.x2, r.y2);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    esporas.forEach(e => {
+      e.x += e.vx;
+      e.y += e.vy;
+      if (e.y < -10) { e.y = alto + 10; e.x = Math.random() * ancho; }
+      if (e.x < -10) e.x = ancho + 10;
+      if (e.x > ancho + 10) e.x = -10;
+      const a = e.alpha * (0.7 + Math.sin(tiempo * 1.2 + e.fase) * 0.3);
+      ctx.save();
+      ctx.fillStyle = 'rgba(220,230,200,' + a + ')';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawCordyceps() {
+    if (!estructura) return;
+    const { racimos } = estructura;
+
+    racimos.forEach(rac => {
+      rac.hongos.forEach(h => {
+        const sway = Math.sin(tiempo * 0.8 + h.fase) * 0.05;
+        const a = h.ang + sway;
+        const x2 = h.x + Math.cos(a) * h.len;
+        const y2 = h.y + Math.sin(a) * h.len;
+
+        // Tallo
+        ctx.save();
+        ctx.strokeStyle = 'rgba(180, 175, 155, 0.35)';
+        ctx.lineWidth = 1.6;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(h.x, h.y);
+        const cx = (h.x + x2) / 2 + Math.cos(a + Math.PI / 2) * h.len * h.curvatura;
+        const cy = (h.y + y2) / 2 + Math.sin(a + Math.PI / 2) * h.len * h.curvatura;
+        ctx.quadraticCurveTo(cx, cy, x2, y2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Sombrero
+        ctx.save();
+        const grad = ctx.createRadialGradient(x2, y2, 0, x2, y2, h.capT);
+        grad.addColorStop(0, 'rgba(140, 150, 110, 0.5)');
+        grad.addColorStop(1, 'rgba(60, 65, 45, 0.1)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(x2, y2, h.capT, h.capT * 0.55, a + Math.PI / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    });
+  }
+
+  function drawAmbiente() {
+    if (!estructura) return;
+    const { manchas, esporas, vetas } = estructura;
+
+    // Vetas horizontales sutiles (como humedad)
+    vetas.forEach(v => {
+      ctx.save();
+      ctx.fillStyle = 'rgba(30, 25, 20, ' + v.alpha + ')';
+      ctx.fillRect(0, v.y, ancho, v.h);
+      ctx.restore();
+    });
+
+    // Manchas de moho (polígonos suaves)
+    manchas.forEach(m => {
+      ctx.save();
+      const c = m.color;
+      ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + m.alpha + ')';
+      ctx.filter = 'blur(8px)';
+      ctx.beginPath();
+      const pts = m.puntos;
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        const prev = pts[i - 1];
+        const cur = pts[i];
+        const cx2 = (prev.x + cur.x) / 2;
+        const cy2 = (prev.y + cur.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, cx2, cy2);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // Esporas
+    esporas.forEach(e => {
+      e.x += e.vx;
+      e.y += e.vy;
+      if (e.y < -10) { e.y = alto + 10; e.x = Math.random() * ancho; }
+      if (e.x < -10) e.x = ancho + 10;
+      if (e.x > ancho + 10) e.x = -10;
+      const a = e.alpha * (0.6 + Math.sin(tiempo + e.fase) * 0.4);
+      ctx.save();
+      ctx.fillStyle = 'rgba(180, 190, 160,' + a + ')';
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function loop() {
+    if (!animId) return;
+    tiempo += 0.016;
+
+    if (Math.abs(rachaAnimada - racha) > 0.1) {
+      const antes = Math.round(rachaAnimada);
+      rachaAnimada += (racha - rachaAnimada) * 0.05;
+      if (Math.round(rachaAnimada) !== antes && (Math.round(rachaAnimada) % 5 === 0 || Math.abs(rachaAnimada - racha) < 1)) {
+        regenerar();
+      }
+    } else if (rachaAnimada !== racha) {
+      rachaAnimada = racha;
+      regenerar();
+    }
+
+    ctx.clearRect(0, 0, ancho, alto);
+    if (modo === 'A') drawMicelio();
+    else if (modo === 'B') drawCordyceps();
+    else if (modo === 'C') drawAmbiente();
+
+    animId = requestAnimationFrame(loop);
+  }
+
+  function start() {
+    stop();
+    resize();
+    if (modo === 'off' || racha <= 0) {
+      ctx.clearRect(0, 0, ancho, alto);
+      canvas.classList.remove('activa');
+      return;
+    }
+    canvas.classList.add('activa');
+    if (rachaAnimada === 0) rachaAnimada = Math.max(0.5, racha - 2);
+    animId = requestAnimationFrame(loop);
+  }
+
+  function stop() {
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  window.addEventListener('resize', () => {
+    if (modo !== 'off') resize();
+  });
+
+  window.Ambiente = {
+    setRacha(n) {
+      racha = Math.max(0, Math.floor(n));
+      if (modo !== 'off') start();
+    },
+    setModo(m) {
+      modo = m;
+      localStorage.setItem('amb_modo', m);
+      document.body.classList.remove('amb-A', 'amb-B', 'amb-C');
+      if (m !== 'off') document.body.classList.add('amb-' + m);
+      start();
+    },
+    getModo() { return modo; }
+  };
+
+  document.body.classList.remove('amb-A', 'amb-B', 'amb-C');
+  if (modo !== 'off') document.body.classList.add('amb-' + modo);
+})();
+
+function setupAmbiente() {
+  const menu = document.getElementById('ambMenu');
+  const badge = document.getElementById('ambBadge');
+
+  function updateMenu() {
+    const m = window.Ambiente.getModo();
+    menu.querySelectorAll('.amb-menu-item').forEach(el => {
+      el.classList.toggle('activo', el.dataset.modo === m);
+    });
+    if (m === 'off') {
+      badge.style.display = 'none';
+    } else {
+      badge.style.display = 'flex';
+      badge.textContent = m;
+    }
+    document.getElementById('ambBtn').classList.toggle('activo', m !== 'off');
+  }
+
+  menu.querySelectorAll('.amb-menu-item').forEach(el => {
+    el.addEventListener('click', () => {
+      window.Ambiente.setModo(el.dataset.modo);
+      updateMenu();
+      menu.classList.remove('activo');
+    });
+  });
+
+  updateMenu();
+
+  document.addEventListener('click', (e) => {
+    const menuEl = document.getElementById('ambMenu');
+    const btn = document.getElementById('ambBtn');
+    if (menuEl.classList.contains('activo') && !menuEl.contains(e.target) && !btn.contains(e.target)) {
+      menuEl.classList.remove('activo');
+    }
+  });
+}
+
+function toggleAmbMenu(event) {
+  if (event) event.stopPropagation();
+  document.getElementById('ambMenu').classList.toggle('activo');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
