@@ -420,29 +420,21 @@
   .modal-box .row button.save { background: var(--surface-3); color: var(--text); border: 1px solid var(--border-hi); }
   .modal-box .row button.save:hover { background: var(--border); }
 
-  /* ============================================================
-     MOBILE / TOUCH
-     ============================================================ */
   @media (max-width: 640px) {
     * { touch-action: manipulation; }
-
     .app {
       padding-left: max(12px, env(safe-area-inset-left));
       padding-right: max(12px, env(safe-area-inset-right));
       padding-top: max(12px, env(safe-area-inset-top));
       padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
-
     .top { padding: 14px 16px; }
     .top h1 { font-size: 18px; }
     .top h1 .logo { width: 36px; height: 36px; font-size: 17px; }
     .logout-btn { padding: 10px 16px; font-size: 14px; min-height: 40px; }
-
     .stats-mini { padding: 12px 14px; gap: 12px; }
     .stat-mini .v { font-size: 22px; }
-
     .tab { padding: 11px 16px; font-size: 14px; min-height: 44px; }
-
     .check-item { padding: 14px 12px; min-height: 52px; }
     .check-item .box { width: 22px; height: 22px; }
     .check-item .box svg { width: 14px; height: 14px; }
@@ -450,21 +442,17 @@
     .check-item .time-hint { font-size: 12px; }
     .check-item .task-actions { opacity: 1; }
     .check-item .task-actions button { padding: 8px 12px; font-size: 14px; }
-
     .mercado-add input { padding: 12px 14px; font-size: 15px; min-height: 48px; }
     .mercado-add button { padding: 12px 18px; font-size: 15px; min-height: 48px; }
     .setting-row input[type="time"], .setting-row input[type="number"] { padding: 10px 12px; font-size: 15px; min-height: 44px; }
     .modal-box input, .modal-box select { padding: 14px 14px; font-size: 16px; min-height: 48px; }
     .modal-box .row button { padding: 12px 20px; font-size: 15px; min-height: 44px; }
     .section-title .add-task-btn { padding: 6px 12px; font-size: 13px; min-height: 34px; }
-
     input, select, textarea { font-size: 16px; }
-
     .temas-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
     .tema-card { padding: 8px; }
     .tema-preview { height: 32px; }
     .tema-nombre { font-size: 10px; }
-
     .day { aspect-ratio: auto; min-height: 56px; }
     .day-header .date { font-size: 20px; }
     .card { padding: 16px; }
@@ -666,20 +654,30 @@ const THEME_COLORS = {
   synthwave:     '#241b2f',
 };
 
-function aplicarTema(id) {
+// Aplica tema al instante (local). No envía a servidor.
+function aplicarTemaLocal(id) {
   if (!VALID_TEMAS.includes(id)) id = 'tlou';
   document.body.classList.remove(...VALID_TEMAS.map(t => 'theme-' + t));
   document.body.classList.add('theme-' + id);
   localStorage.setItem('tema', id);
-
   const color = THEME_COLORS[id] || '#0a0a0a';
   const meta = document.getElementById('themeColorMeta');
   if (meta) meta.setAttribute('content', color);
-
-  try {
-    api('/api/settings', { method: 'PUT', body: JSON.stringify({ tema: id }) });
-  } catch (e) {}
   renderTemasGrid();
+}
+
+// Aplica tema Y lo guarda en Supabase (para sync entre dispositivos).
+async function aplicarTema(id) {
+  if (!VALID_TEMAS.includes(id)) id = 'tlou';
+  aplicarTemaLocal(id);
+  markSaving();
+  try {
+    await api('/api/settings', { method: 'PUT', body: JSON.stringify({ tema: id }) });
+    DB.settings.tema = id;
+    markSaved();
+  } catch (e) {
+    showToast('Error guardando tema');
+  }
 }
 
 function renderTemasGrid() {
@@ -1193,7 +1191,8 @@ function showToast(msg) {
 }
 
 async function init() {
-  aplicarTema(localStorage.getItem('tema') || 'tlou');
+  // 1. Aplicar el tema de localStorage AL INSTANTE (evita flash)
+  aplicarTemaLocal(localStorage.getItem('tema') || 'tlou');
 
   try {
     const [days, mercado, notas, settings, tareas] = await Promise.all([
@@ -1205,8 +1204,9 @@ async function init() {
     DB.settings = settings || {};
     DB.tareas = tareas || [];
 
+    // 2. Si hay tema guardado en Supabase, aplicarlo (tiene prioridad)
     if (DB.settings.tema && VALID_TEMAS.includes(DB.settings.tema)) {
-      aplicarTema(DB.settings.tema);
+      aplicarTemaLocal(DB.settings.tema);
     }
 
     if (DB.tareas.length === 0) {
