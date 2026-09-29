@@ -1,7 +1,7 @@
 import os
 import secrets
 import traceback
-from datetime import timedelta
+from datetime import timedelta, datetime
 from functools import wraps
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
@@ -93,21 +93,19 @@ def login():
   .box { background: #141210; border: 1px solid #2e2721; border-radius: 12px;
          padding: 32px 28px; width: 100%; max-width: 380px;
          box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
-  h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.02em; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
   h1::before { content: '❖ '; color: #7a8b6a; }
   .sub { color: #8a7f70; font-size: 13px; margin-bottom: 24px; }
   label { font-size: 11px; color: #8a7f70; font-weight: 600; text-transform: uppercase;
           letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
-  input { width: 100%; padding: 14px 14px; background: #0a0a0a; color: #d8d0c4;
+  input { width: 100%; padding: 14px; background: #0a0a0a; color: #d8d0c4;
           border: 1px solid #2e2721; border-radius: 8px; font-size: 16px;
           margin-bottom: 16px; font-family: inherit; }
   input:focus { outline: none; border-color: #7a8b6a; }
   button { width: 100%; padding: 14px; background: #4a5540; color: #d8d0c4;
            border: 1px solid #5a6550; border-radius: 8px; font-size: 15px; font-weight: 600;
-           font-family: inherit; cursor: pointer; transition: background 0.15s;
-           touch-action: manipulation; }
+           font-family: inherit; cursor: pointer; }
   button:hover { background: #5a6550; }
-  button:active { transform: scale(0.98); }
   .err { color: #a04a3a; font-size: 13px; margin-bottom: 14px; padding: 10px;
          background: rgba(160,74,58,0.1); border-radius: 6px; text-align: center;
          border: 1px solid rgba(160,74,58,0.3); }
@@ -149,6 +147,12 @@ def service_worker():
     response.headers['Service-Worker-Allowed'] = '/'
     response.headers['Cache-Control'] = 'no-cache'
     return response
+
+# ============================================================
+# HELPERS
+# ============================================================
+def _now_iso():
+    return datetime.utcnow().isoformat()
 
 # ============================================================
 # API · DÍAS
@@ -282,6 +286,35 @@ def put_notas():
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
+# API · NOTAS POR DÍA (feature #5)
+# ============================================================
+@app.route('/api/notas_dia', methods=['GET'])
+@login_required
+def get_notas_dia():
+    try:
+        response = supabase.table('notas_dia').select('*').execute()
+        return jsonify({row['date']: row['nota'] for row in response.data})
+    except Exception as e:
+        print("❌ ERROR en /api/notas_dia:")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/notas_dia/<date>', methods=['PUT'])
+@login_required
+def put_nota_dia(date):
+    data = request.get_json() or {}
+    nota = data.get('nota', '')
+    try:
+        supabase.table('notas_dia').upsert({
+            'date': date, 'nota': nota, 'updated_at': _now_iso()
+        }).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print("❌ ERROR en PUT /api/notas_dia/" + date + ":")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================
 # API · SETTINGS
 # ============================================================
 @app.route('/api/settings', methods=['GET'])
@@ -309,13 +342,119 @@ def put_settings():
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
+# API · PLANTILLAS (feature #13)
+# ============================================================
+@app.route('/api/plantillas', methods=['GET'])
+@login_required
+def get_plantillas():
+    try:
+        response = supabase.table('plantillas').select('*').order('id').execute()
+        return jsonify(response.data)
+    except Exception as e:
+        print("❌ ERROR en /api/plantillas:")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/plantillas', methods=['POST'])
+@login_required
+def add_plantilla():
+    data = request.get_json() or {}
+    nombre = (data.get('nombre') or '').strip()
+    if not nombre:
+        return jsonify({'error': 'Nombre vacío'}), 400
+    try:
+        response = supabase.table('plantillas').insert({
+            'nombre': nombre, 'activa': 0
+        }).execute()
+        return jsonify(response.data[0])
+    except Exception as e:
+        print("❌ ERROR en POST /api/plantillas:")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/plantillas/<int:pid>', methods=['PUT'])
+@login_required
+def update_plantilla(pid):
+    data = request.get_json() or {}
+    try:
+        upd = {}
+        if 'nombre' in data:
+            upd['nombre'] = data['nombre'].strip()
+        if 'activa' in data:
+            upd['activa'] = 1 if data['activa'] else 0
+        if not upd:
+            return jsonify({'error': 'Nada que actualizar'}), 400
+        # Si activa=1, desactivar las demás
+        if upd.get('activa') == 1:
+            supabase.table('plantillas').update({'activa': 0}).neq('id', pid).execute()
+        supabase.table('plantillas').update(upd).eq('id', pid).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print("❌ ERROR en PUT /api/plantillas/" + str(pid) + ":")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/plantillas/<int:pid>', methods=['DELETE'])
+@login_required
+def delete_plantilla(pid):
+    try:
+        # No permitir borrar si es la única
+        resp = supabase.table('plantillas').select('id').execute()
+        if len(resp.data) <= 1:
+            return jsonify({'error': 'Debe quedar al menos una plantilla'}), 400
+        # Verificar que no sea la activa
+        p = supabase.table('plantillas').select('activa').eq('id', pid).execute()
+        if p.data and p.data[0]['activa'] == 1:
+            return jsonify({'error': 'No puedes eliminar la plantilla activa'}), 400
+        supabase.table('plantillas').delete().eq('id', pid).execute()
+        supabase.table('tareas').delete().eq('plantilla_id', pid).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print("❌ ERROR en DELETE /api/plantillas/" + str(pid) + ":")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/plantillas/<int:pid>/duplicar', methods=['POST'])
+@login_required
+def duplicar_plantilla(pid):
+    try:
+        p = supabase.table('plantillas').select('*').eq('id', pid).execute()
+        if not p.data:
+            return jsonify({'error': 'Plantilla no existe'}), 404
+        nueva = supabase.table('plantillas').insert({
+            'nombre': p.data[0]['nombre'] + ' (copia)',
+            'activa': 0
+        }).execute()
+        nueva_id = nueva.data[0]['id']
+        tareas = supabase.table('tareas').select('*').eq('plantilla_id', pid).execute()
+        for t in tareas.data:
+            supabase.table('tareas').insert({
+                'section': t['section'],
+                'text': t['text'],
+                'time_hint': t['time_hint'],
+                'etiqueta': t.get('etiqueta', ''),
+                'position': t['position'],
+                'plantilla_id': nueva_id
+            }).execute()
+        return jsonify(nueva.data[0])
+    except Exception as e:
+        print("❌ ERROR en POST /api/plantillas/" + str(pid) + "/duplicar:")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================
 # API · TAREAS
 # ============================================================
 @app.route('/api/tareas', methods=['GET'])
 @login_required
 def get_tareas():
     try:
-        response = supabase.table('tareas').select('*').order('section').order('position').order('id').execute()
+        # Devolver solo las tareas de la plantilla activa
+        act = supabase.table('plantillas').select('id').eq('activa', 1).execute()
+        if not act.data:
+            return jsonify([])
+        pid = act.data[0]['id']
+        response = supabase.table('tareas').select('*').eq('plantilla_id', pid).order('section').order('position').order('id').execute()
         return jsonify(response.data)
     except Exception as e:
         print("❌ ERROR en /api/tareas:")
@@ -329,18 +468,27 @@ def add_tarea():
     section = (data.get('section') or '').strip()
     text = (data.get('text') or '').strip()
     time_hint = (data.get('time_hint') or '').strip()
+    etiqueta = (data.get('etiqueta') or '').strip()
     if not section or not text:
         return jsonify({'error': 'Falta sección o texto'}), 400
     if section not in ('manana', 'trabajo', 'tarde', 'noche'):
         return jsonify({'error': 'Sección inválida'}), 400
     try:
-        max_resp = supabase.table('tareas').select('position').eq('section', section).order('position', desc=True).limit(1).execute()
+        # Plantilla activa
+        act = supabase.table('plantillas').select('id').eq('activa', 1).execute()
+        if not act.data:
+            return jsonify({'error': 'No hay plantilla activa'}), 400
+        pid = act.data[0]['id']
+
+        max_resp = supabase.table('tareas').select('position').eq('section', section).eq('plantilla_id', pid).order('position', desc=True).limit(1).execute()
         pos = (max_resp.data[0]['position'] + 1) if max_resp.data else 1
         response = supabase.table('tareas').insert({
             'section': section,
             'text': text,
             'time_hint': time_hint,
-            'position': pos
+            'etiqueta': etiqueta,
+            'position': pos,
+            'plantilla_id': pid
         }).execute()
         return jsonify(response.data[0])
     except Exception as e:
@@ -358,6 +506,8 @@ def update_tarea(tid):
             upd['text'] = (data['text'] or '').strip()
         if 'time_hint' in data:
             upd['time_hint'] = (data['time_hint'] or '').strip()
+        if 'etiqueta' in data:
+            upd['etiqueta'] = (data['etiqueta'] or '').strip()
         if 'section' in data:
             sec = data['section']
             if sec not in ('manana', 'trabajo', 'tarde', 'noche'):
@@ -380,6 +530,67 @@ def delete_tarea(tid):
         return jsonify({'ok': True})
     except Exception as e:
         print("❌ ERROR en DELETE /api/tareas/" + str(tid) + ":")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================
+# API · RECORDS (feature #15, #16)
+# ============================================================
+@app.route('/api/records', methods=['GET'])
+@login_required
+def get_records():
+    try:
+        response = supabase.table('records').select('key, value').execute()
+        return jsonify({row['key']: row['value'] for row in response.data})
+    except Exception as e:
+        print("❌ ERROR en /api/records:")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/records/<key>', methods=['PUT'])
+@login_required
+def put_record(key):
+    data = request.get_json() or {}
+    value = str(data.get('value', '0'))
+    try:
+        supabase.table('records').upsert({
+            'key': key, 'value': value, 'updated_at': _now_iso()
+        }).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print("❌ ERROR en PUT /api/records/" + key + ":")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================
+# API · RACHAS POR TAREA (feature #15)
+# ============================================================
+@app.route('/api/tareas_rachas', methods=['GET'])
+@login_required
+def get_tareas_rachas():
+    try:
+        response = supabase.table('tareas_rachas').select('*').execute()
+        return jsonify(response.data)
+    except Exception as e:
+        print("❌ ERROR en /api/tareas_rachas:")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tareas_rachas/<int:tid>', methods=['PUT'])
+@login_required
+def put_tarea_racha(tid):
+    data = request.get_json() or {}
+    try:
+        supabase.table('tareas_rachas').upsert({
+            'tarea_id': tid,
+            'racha_actual': int(data.get('racha_actual', 0)),
+            'racha_maxima': int(data.get('racha_maxima', 0)),
+            'ultimo_dia': data.get('ultimo_dia'),
+            'updated_at': _now_iso()
+        }).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print("❌ ERROR en PUT /api/tareas_rachas/" + str(tid) + ":")
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
