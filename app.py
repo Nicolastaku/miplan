@@ -1,5 +1,6 @@
 import os
 import secrets
+import traceback
 from datetime import timedelta
 from functools import wraps
 
@@ -32,7 +33,6 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=90)
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
 
-# DEBUG: mostrar en logs qué está leyendo
 print("=" * 60)
 print("DEBUG SUPABASE_URL:", repr(SUPABASE_URL))
 print("DEBUG SUPABASE_KEY (primeros 30):", repr(SUPABASE_KEY[:30]))
@@ -43,7 +43,6 @@ print("=" * 60)
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_KEY")
 
-# Validación: la URL debe empezar con https://
 if not SUPABASE_URL.startswith('https://') or len(SUPABASE_URL) < 20:
     raise RuntimeError(f"SUPABASE_URL inválida: {SUPABASE_URL!r}")
 
@@ -52,6 +51,7 @@ try:
     print("✅ Cliente Supabase creado correctamente")
 except Exception as e:
     print("❌ ERROR creando cliente Supabase:", repr(e))
+    traceback.print_exc()
     raise
 
 # ============================================================
@@ -150,6 +150,8 @@ def get_days():
             result[row['date']] = row['data']
         return jsonify(result)
     except Exception as e:
+        print("❌ ERROR en /api/days:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/days/<date>', methods=['PUT'])
@@ -160,6 +162,8 @@ def put_day(date):
         supabase.table('days').upsert({'date': date, 'data': payload}).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en PUT /api/days/" + date + ":")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
@@ -172,6 +176,8 @@ def get_mercado():
         response = supabase.table('mercado').select('*').order('position').order('id').execute()
         return jsonify(response.data)
     except Exception as e:
+        print("❌ ERROR en /api/mercado:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/mercado', methods=['POST'])
@@ -190,6 +196,8 @@ def add_mercado():
         }).execute()
         return jsonify(response.data[0])
     except Exception as e:
+        print("❌ ERROR en POST /api/mercado:")
+        traceback.print_exc()
         if 'duplicate' in str(e).lower() or 'unique' in str(e).lower():
             return jsonify({'error': 'Ya existe'}), 400
         return jsonify({'error': str(e)}), 500
@@ -207,6 +215,8 @@ def update_mercado(mid):
         supabase.table('mercado').update(update_data).eq('id', mid).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en PUT /api/mercado/" + str(mid) + ":")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/mercado/<int:mid>', methods=['DELETE'])
@@ -216,6 +226,8 @@ def delete_mercado(mid):
         supabase.table('mercado').delete().eq('id', mid).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en DELETE /api/mercado/" + str(mid) + ":")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/mercado/reset', methods=['POST'])
@@ -225,6 +237,8 @@ def reset_mercado():
         supabase.table('mercado').update({'checked': 0}).neq('id', 0).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en POST /api/mercado/reset:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
@@ -238,6 +252,8 @@ def get_notas():
         content = response.data[0]['content'] if response.data else ''
         return jsonify({'content': content})
     except Exception as e:
+        print("❌ ERROR en /api/notas:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/notas', methods=['PUT'])
@@ -248,6 +264,8 @@ def put_notas():
         supabase.table('notas').update({'content': data.get('content', '')}).eq('id', 1).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en PUT /api/notas:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
@@ -260,6 +278,8 @@ def get_settings():
         response = supabase.table('settings').select('key, value').execute()
         return jsonify({row['key']: row['value'] for row in response.data})
     except Exception as e:
+        print("❌ ERROR en /api/settings:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/settings', methods=['PUT'])
@@ -271,6 +291,8 @@ def put_settings():
             supabase.table('settings').upsert({'key': k, 'value': str(v)}).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en PUT /api/settings:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
@@ -283,6 +305,8 @@ def get_tareas():
         response = supabase.table('tareas').select('*').order('section').order('position').order('id').execute()
         return jsonify(response.data)
     except Exception as e:
+        print("❌ ERROR en /api/tareas:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/tareas', methods=['POST'])
@@ -307,6 +331,8 @@ def add_tarea():
         }).execute()
         return jsonify(response.data[0])
     except Exception as e:
+        print("❌ ERROR en POST /api/tareas:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/tareas/<int:tid>', methods=['PUT'])
@@ -329,6 +355,8 @@ def update_tarea(tid):
         supabase.table('tareas').update(upd).eq('id', tid).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en PUT /api/tareas/" + str(tid) + ":")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/tareas/<int:tid>', methods=['DELETE'])
@@ -338,6 +366,8 @@ def delete_tarea(tid):
         supabase.table('tareas').delete().eq('id', tid).execute()
         return jsonify({'ok': True})
     except Exception as e:
+        print("❌ ERROR en DELETE /api/tareas/" + str(tid) + ":")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 # ============================================================
@@ -349,6 +379,8 @@ def health():
         supabase.table('days').select('date').limit(1).execute()
         return jsonify({'ok': True, 'db': 'connected'})
     except Exception as e:
+        print("❌ ERROR en /api/health:")
+        traceback.print_exc()
         return jsonify({'ok': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
