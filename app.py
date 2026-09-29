@@ -29,13 +29,30 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=90)
 # ============================================================
 # SUPABASE
 # ============================================================
-SUPABASE_URL = os.environ.get('SUPABASE_URL')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
+
+# DEBUG: mostrar en logs qué está leyendo
+print("=" * 60)
+print("DEBUG SUPABASE_URL:", repr(SUPABASE_URL))
+print("DEBUG SUPABASE_KEY (primeros 30):", repr(SUPABASE_KEY[:30]))
+print("DEBUG SUPABASE_KEY (últimos 10):", repr(SUPABASE_KEY[-10:]))
+print("DEBUG SUPABASE_KEY length:", len(SUPABASE_KEY))
+print("=" * 60)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_KEY")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Validación: la URL debe empezar con https://
+if not SUPABASE_URL.startswith('https://') or len(SUPABASE_URL) < 20:
+    raise RuntimeError(f"SUPABASE_URL inválida: {SUPABASE_URL!r}")
+
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    print("✅ Cliente Supabase creado correctamente")
+except Exception as e:
+    print("❌ ERROR creando cliente Supabase:", repr(e))
+    raise
 
 # ============================================================
 # AUTH
