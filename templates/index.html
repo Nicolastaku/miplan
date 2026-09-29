@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mi Plan</title>
 <style>
+  /* ============================================================
+     TEMAS · variables por defecto (TLOU)
+     ============================================================ */
   :root {
     --bg: #0a0a0a; --surface: #141210; --surface-2: #1a1714;
     --surface-3: #24201c; --border: #2e2721; --border-hi: #3d342c;
@@ -12,25 +15,123 @@
     --accent: #7a8b6a; --accent-hi: #95a584;
     --green: #6b8f5a; --yellow: #b89a4a; --red: #a04a3a; --purple: #7a6a8a;
     --orange: #b87840; --radius: 10px; --radius-sm: 7px;
-    --amb-opacity: 0.14;
+    --planta-opacity: 0.16;
+    --grain-opacity: 0.04;
   }
+
+  /* ============================================================
+     TEMAS · cada uno redefine variables
+     ============================================================ */
+  body.theme-tlou {
+    --bg: #0a0a0a; --surface: #141210; --surface-2: #1a1714;
+    --surface-3: #24201c; --border: #2e2721; --border-hi: #3d342c;
+    --text: #d8d0c4; --text-dim: #8a7f70; --text-mute: #5a5148;
+    --accent: #7a8b6a; --accent-hi: #95a584;
+    --green: #6b8f5a; --yellow: #b89a4a; --red: #a04a3a; --purple: #7a6a8a;
+    --orange: #b87840;
+    --grain-opacity: 0.04;
+  }
+  body.theme-light {
+    --bg: #f5f7fa; --surface: #ffffff; --surface-2: #f0f3f7;
+    --surface-3: #e2e8f0; --border: #e2e8f0; --border-hi: #cbd5e1;
+    --text: #1e293b; --text-dim: #64748b; --text-mute: #94a3b8;
+    --accent: #2563eb; --accent-hi: #1d4ed8;
+    --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --purple: #8b5cf6;
+    --orange: #f97316;
+    --grain-opacity: 0;
+  }
+  body.theme-vscode {
+    --bg: #1e1e1e; --surface: #252526; --surface-2: #2d2d30;
+    --surface-3: #3e3e42; --border: #3c3c3c; --border-hi: #545454;
+    --text: #d4d4d4; --text-dim: #a0a0a0; --text-mute: #6a6a6a;
+    --accent: #007acc; --accent-hi: #1a8cd8;
+    --green: #4ec9b0; --yellow: #dcdcaa; --red: #f48771; --purple: #c586c0;
+    --orange: #ce9178;
+    --grain-opacity: 0;
+  }
+  body.theme-dracula {
+    --bg: #282a36; --surface: #343746; --surface-2: #44475a;
+    --surface-3: #545766; --border: #44475a; --border-hi: #6272a4;
+    --text: #f8f8f2; --text-dim: #bcc2cd; --text-mute: #6272a4;
+    --accent: #bd93f9; --accent-hi: #caa9fa;
+    --green: #50fa7b; --yellow: #f1fa8c; --red: #ff5555; --purple: #bd93f9;
+    --orange: #ffb86c;
+    --grain-opacity: 0;
+  }
+  body.theme-nord {
+    --bg: #2e3440; --surface: #3b4252; --surface-2: #434c5e;
+    --surface-3: #4c566a; --border: #4c566a; --border-hi: #616e88;
+    --text: #eceff4; --text-dim: #d8dee9; --text-mute: #7b88a1;
+    --accent: #88c0d0; --accent-hi: #8fbcbb;
+    --green: #a3be8c; --yellow: #ebcb8b; --red: #bf616a; --purple: #b48ead;
+    --orange: #d08770;
+    --grain-opacity: 0;
+  }
+  body.theme-tokyo {
+    --bg: #1a1b26; --surface: #1f2335; --surface-2: #24283b;
+    --surface-3: #292e42; --border: #2f334d; --border-hi: #414868;
+    --text: #c0caf5; --text-dim: #a9b1d6; --text-mute: #565f89;
+    --accent: #7aa2f7; --accent-hi: #89b4fa;
+    --green: #9ece6a; --yellow: #e0af68; --red: #f7768e; --purple: #bb9af7;
+    --orange: #ff9e64;
+    --grain-opacity: 0;
+  }
+  body.theme-catppuccin {
+    --bg: #1e1e2e; --surface: #252537; --surface-2: #313244;
+    --surface-3: #45475a; --border: #313244; --border-hi: #585b70;
+    --text: #cdd6f4; --text-dim: #bac2de; --text-mute: #6c7086;
+    --accent: #89b4fa; --accent-hi: #a6c8ff;
+    --green: #a6e3a1; --yellow: #f9e2af; --red: #f38ba8; --purple: #cba6f7;
+    --orange: #fab387;
+    --grain-opacity: 0;
+  }
+  body.theme-onedark {
+    --bg: #21252b; --surface: #282c34; --surface-2: #2c313a;
+    --surface-3: #3a3f4b; --border: #3a3f4b; --border-hi: #4b5263;
+    --text: #abb2bf; --text-dim: #9da5b4; --text-mute: #5c6370;
+    --accent: #61afef; --accent-hi: #7bc0f7;
+    --green: #98c379; --yellow: #e5c07b; --red: #e06c75; --purple: #c678dd;
+    --orange: #d19a66;
+    --grain-opacity: 0;
+  }
+  body.theme-unifi-light {
+    --bg: #f7f9fc; --surface: #ffffff; --surface-2: #eef3fa;
+    --surface-3: #dbe6f5; --border: #d0dff0; --border-hi: #a8c2e0;
+    --text: #0a1e3a; --text-dim: #4a5a75; --text-mute: #8a99b3;
+    --accent: #0058cc; --accent-hi: #0047a6;
+    --green: #0e9f6e; --yellow: #d97706; --red: #d92d20; --purple: #7c3aed;
+    --orange: #ea580c;
+    --grain-opacity: 0;
+  }
+  body.theme-synthwave {
+    --bg: #241b2f; --surface: #2a2139; --surface-2: #34294f;
+    --surface-3: #453a63; --border: #3a2e52; --border-hi: #5c4a80;
+    --text: #f0eff1; --text-dim: #b8b1c7; --text-mute: #7a6d8f;
+    --accent: #f92aad; --accent-hi: #ff4bc0;
+    --green: #72f1b8; --yellow: #fede5d; --red: #fe4450; --purple: #36f9f6;
+    --orange: #ff8b39;
+    --grain-opacity: 0;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { min-height: 100%; }
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.5; font-size: 14px;
     -webkit-font-smoothing: antialiased;
     position: relative;
     overflow-x: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
   }
 
-  /* textura sutil tipo papel/grano encima de todo */
+  /* grain solo cuando el tema lo activa (TLOU) */
   body::after {
     content: '';
     position: fixed; inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.04;
+    opacity: var(--grain-opacity);
+    transition: opacity 0.3s ease;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
@@ -39,13 +140,12 @@
     width: 100vw; height: 100vh;
     z-index: 0; pointer-events: none;
     opacity: 0;
-    transition: opacity 2s ease;
+    transition: opacity 1.4s ease;
   }
-  #ambienteCanvas.activa { opacity: var(--amb-opacity); }
-
-  body.amb-A { --amb-opacity: 0.16; }
-  body.amb-B { --amb-opacity: 0.18; }
-  body.amb-C { --amb-opacity: 0.22; }
+  #ambienteCanvas.activa { opacity: 0.16; }
+  body.amb-A #ambienteCanvas.activa { opacity: 0.16; }
+  body.amb-B #ambienteCanvas.activa { opacity: 0.18; }
+  body.amb-C #ambienteCanvas.activa { opacity: 0.22; }
 
   .app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
 
@@ -61,8 +161,9 @@
     border-radius: var(--radius);
     position: relative;
     overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
   }
-  .top::before {
+  body.theme-tlou .top::before {
     content: '';
     position: absolute; inset: 0;
     pointer-events: none;
@@ -77,9 +178,9 @@
   .top h1 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; letter-spacing: 0.02em; }
   .top h1 .logo {
     width: 32px; height: 32px; border-radius: 6px;
-    background: linear-gradient(135deg, #4a5540, #2a2e24);
-    border: 1px solid #3a4030;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hi));
     display: flex; align-items: center; justify-content: center; font-size: 15px;
+    color: var(--bg);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
   }
   .top .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.03em; }
@@ -101,19 +202,10 @@
   .btn-icon:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-hi); }
   .btn-icon.activo { color: var(--green); border-color: var(--green); background: rgba(107,143,90,0.08); }
 
-  .amb-btn .modo-badge {
-    position: absolute; bottom: -3px; right: -3px;
-    background: var(--accent); color: #0a0a0a;
-    font-size: 8px; font-weight: 700;
-    width: 15px; height: 15px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid var(--bg);
-  }
-
   /* ============================================================
      STATS
      ============================================================ */
-  .stats-mini { display: flex; gap: 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; }
+  .stats-mini { display: flex; gap: 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 16px; transition: background 0.3s, border-color 0.3s; }
   .stat-mini { text-align: center; }
   .stat-mini .v { font-size: 20px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
   .stat-mini .l { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
@@ -121,17 +213,17 @@
   .stat-mini.today .v { color: var(--accent-hi); }
   .stat-mini.week .v { color: var(--green); }
 
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); padding: 5px; border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--border); }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); padding: 5px; border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--border); transition: background 0.3s, border-color 0.3s; }
   .tab { padding: 9px 16px; border: none; background: transparent; color: var(--text-dim); font-size: 13px; font-weight: 500; font-family: inherit; border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
   .tab:hover { color: var(--text); background: var(--surface-2); }
-  .tab.active { background: #2e3424; color: var(--text); border: 1px solid #3d4430; }
+  .tab.active { background: var(--surface-3); color: var(--text); }
 
   .view { display: none; }
   .view.active { display: block; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ============================================================
-     CARDS con decoración TLOU
+     CARDS
      ============================================================ */
   .card {
     background: var(--surface);
@@ -141,8 +233,9 @@
     margin-bottom: 16px;
     position: relative;
     overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
   }
-  .card::before {
+  body.theme-tlou .card::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -163,16 +256,16 @@
   .day-header .dow { font-size: 13px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.04em; }
   .progress-text { font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .progress-bar { height: 5px; background: var(--surface-3); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
-  .progress-bar .fill { height: 100%; background: linear-gradient(90deg, #4a5540, #6a7a58); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+  .progress-bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
 
   .sections { display: flex; flex-direction: column; gap: 20px; }
-  .section { background: var(--surface-2); border-radius: var(--radius-sm); padding: 14px 16px; position: relative; }
+  .section { background: var(--surface-2); border-radius: var(--radius-sm); padding: 14px 16px; position: relative; transition: background 0.3s; }
   .section-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .section-title .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .section.manana .dot { background: #b89a4a; }
-  .section.trabajo .dot { background: #a04a3a; }
-  .section.tarde .dot { background: #7a8b6a; }
-  .section.noche .dot { background: #7a6a8a; }
+  .section.manana .dot { background: var(--yellow); }
+  .section.trabajo .dot { background: var(--red); }
+  .section.tarde .dot { background: var(--accent); }
+  .section.noche .dot { background: var(--purple); }
   .section-title .add-task-btn {
     margin-left: auto;
     background: transparent; border: 1px solid var(--border);
@@ -180,7 +273,7 @@
     padding: 3px 9px; font-size: 11px; cursor: pointer;
     font-family: inherit; transition: all 0.15s;
   }
-  .section-title .add-task-btn:hover { color: var(--accent-hi); border-color: var(--accent); background: rgba(122,139,106,0.08); }
+  .section-title .add-task-btn:hover { color: var(--accent-hi); border-color: var(--accent); background: var(--surface-3); }
 
   .check-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; font-size: 13px; user-select: none; position: relative; }
   .check-item:hover { background: var(--surface-3); }
@@ -242,8 +335,8 @@
   .mercado-add { display: flex; gap: 8px; margin-bottom: 14px; }
   .mercado-add input { flex: 1; padding: 9px 14px; border: 1px solid var(--border); background: var(--surface-2); border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 13px; }
   .mercado-add input:focus { outline: none; border-color: var(--accent); }
-  .mercado-add button { padding: 9px 16px; background: #3a4030; color: var(--text); border: 1px solid #4a5040; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all 0.15s; }
-  .mercado-add button:hover { background: #4a5040; }
+  .mercado-add button { padding: 9px 16px; background: var(--surface-3); color: var(--text); border: 1px solid var(--border-hi); border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+  .mercado-add button:hover { background: var(--border); }
   .mercado-reset { padding: 6px 12px; background: transparent; color: var(--red); border: 1px solid var(--red); border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; font-size: 12px; transition: all 0.15s; margin-top: 14px; }
   .mercado-reset:hover { background: rgba(160,74,58,0.1); }
 
@@ -259,38 +352,70 @@
   .hist-row .hist-pct { font-weight: 700; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
   .hist-empty { text-align: center; padding: 40px 20px; color: var(--text-dim); }
 
+  /* ============================================================
+     TEMAS · selector
+     ============================================================ */
+  .temas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .tema-card {
+    background: var(--surface-2);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .tema-card:hover { background: var(--surface-3); }
+  .tema-card.activo { border-color: var(--accent); background: var(--surface-3); }
+  .tema-card.activo::after {
+    content: '✓';
+    position: absolute; top: 6px; right: 8px;
+    color: var(--accent); font-weight: 700; font-size: 13px;
+  }
+  .tema-preview {
+    height: 40px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    display: flex;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+  .tema-preview .seg { flex: 1; }
+  .tema-nombre {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .tema-card.activo .tema-nombre { color: var(--text); }
+
   .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
   .setting-row:last-child { border-bottom: none; }
   .setting-row label { font-size: 13px; }
   .setting-row input[type="time"], .setting-row input[type="number"] { padding: 7px 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 6px; font-family: inherit; font-size: 13px; }
   .setting-row input:focus { outline: none; border-color: var(--accent); }
+  .setting-btn {
+    padding: 7px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .setting-btn:hover { background: var(--surface-3); border-color: var(--border-hi); }
+  .setting-btn.activo { color: var(--green); border-color: var(--green); }
 
   .toast { position: fixed; bottom: 20px; right: 20px; background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,0.6); font-size: 13px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 1000; max-width: 320px; }
   .toast.show { transform: translateY(0); opacity: 1; }
 
-  .amb-menu {
-    position: fixed; top: 60px; right: 20px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 6px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
-    z-index: 999; display: none; min-width: 280px;
-  }
-  .amb-menu.activo { display: block; animation: fadeIn 0.15s ease; }
-  .amb-menu-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px; border-radius: var(--radius-sm);
-    cursor: pointer; transition: background 0.15s;
-    font-size: 13px;
-  }
-  .amb-menu-item:hover { background: var(--surface-2); }
-  .amb-menu-item .icon { font-size: 16px; width: 20px; text-align: center; }
-  .amb-menu-item .info { flex: 1; }
-  .amb-menu-item .nombre { font-weight: 600; color: var(--text); }
-  .amb-menu-item .desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .amb-menu-item .check { color: var(--accent); font-weight: 700; opacity: 0; }
-  .amb-menu-item.activo .check { opacity: 1; }
-
-  /* modal para agregar/editar tarea */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.7);
@@ -319,8 +444,8 @@
   .modal-box .row button { padding: 9px 18px; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
   .modal-box .row button.cancel { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
   .modal-box .row button.cancel:hover { color: var(--text); border-color: var(--border-hi); }
-  .modal-box .row button.save { background: #4a5540; color: var(--text); border: 1px solid #5a6550; }
-  .modal-box .row button.save:hover { background: #5a6550; }
+  .modal-box .row button.save { background: var(--surface-3); color: var(--text); border: 1px solid var(--border-hi); }
+  .modal-box .row button.save:hover { background: var(--border); }
 
   @media (max-width: 640px) {
     .app { padding: 12px; }
@@ -331,39 +456,16 @@
     .tab { padding: 8px 12px; font-size: 12px; }
     .card { padding: 16px; }
     .day-header .date { font-size: 20px; }
-    .amb-menu { right: 12px; left: 12px; min-width: 0; }
+    .temas-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
   }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 4px; }
 </style>
 </head>
-<body>
+<body class="theme-tlou">
 
 <canvas id="ambienteCanvas"></canvas>
-
-<div class="amb-menu" id="ambMenu">
-  <div class="amb-menu-item" data-modo="off">
-    <span class="icon">◌</span>
-    <div class="info"><div class="nombre">Apagado</div><div class="desc">Sin ambiente</div></div>
-    <span class="check">✓</span>
-  </div>
-  <div class="amb-menu-item" data-modo="A">
-    <span class="icon">🌾</span>
-    <div class="info"><div class="nombre">A · Micelio</div><div class="desc">Fibras ramificadas irregulares</div></div>
-    <span class="check">✓</span>
-  </div>
-  <div class="amb-menu-item" data-modo="B">
-    <span class="icon">🍄</span>
-    <div class="info"><div class="nombre">B · Cordyceps</div><div class="desc">Hongos brotando en racimos</div></div>
-    <span class="check">✓</span>
-  </div>
-  <div class="amb-menu-item" data-modo="C">
-    <span class="icon">🌫️</span>
-    <div class="info"><div class="nombre">C · Ambiente</div><div class="desc">Moho, esporas, penumbra</div></div>
-    <span class="check">✓</span>
-  </div>
-</div>
 
 <div class="modal-overlay" id="taskModal">
   <div class="modal-box">
@@ -395,10 +497,6 @@
     </div>
     <div class="top-actions">
       <span class="save-indicator" id="saveIndicator"></span>
-      <button class="btn-icon amb-btn" onclick="toggleAmbMenu(event)" id="ambBtn" title="Ambiente">
-        🍄
-        <span class="modo-badge" id="ambBadge" style="display:none;">·</span>
-      </button>
       <a href="/logout" class="logout-btn">Salir</a>
     </div>
   </div>
@@ -486,14 +584,28 @@
       <div class="setting-row"><label>Hora de entrada al trabajo</label><input type="time" id="setWorkStart" value="09:00"></div>
       <div class="setting-row"><label>Hora de salida del trabajo</label><input type="time" id="setWorkEnd" value="19:00"></div>
     </div>
+
+    <div class="card">
+      <h2>Tema</h2>
+      <div class="temas-grid" id="temasGrid"></div>
+    </div>
+
     <div class="card">
       <h2>Ambiente</h2>
       <div class="setting-row">
-        <label>Modo actual</label>
-        <button class="btn-icon" onclick="toggleAmbMenu(event)" style="width:auto;padding:0 14px;">Cambiar</button>
+        <label>Estado</label>
+        <button class="setting-btn" id="ambToggleBtn" onclick="toggleAmbiente()">—</button>
       </div>
-      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-top:8px;">
-        A: Micelio (fibras ramificadas) · B: Cordyceps (hongos brotando) · C: Ambiente (moho, esporas y penumbra).
+      <div class="setting-row">
+        <label>Modo</label>
+        <select id="ambModeSelect" class="setting-btn" style="padding:7px 14px;">
+          <option value="A">A · Micelio</option>
+          <option value="B">B · Cordyceps</option>
+          <option value="C">C · Ambiente</option>
+        </select>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-top:12px;">
+        El ambiente es independiente del tema. Puedes tener tema claro con micelio, o tema TLOU sin ambiente. Se apaga con "Apagado".
       </div>
     </div>
   </div>
@@ -504,7 +616,60 @@
 
 <script>
 // ============================================================
-// DEFAULT TAREAS (si la tabla está vacía)
+// TEMAS
+// ============================================================
+const TEMAS = [
+  { id: 'tlou',          nombre: 'TLOU',          preview: ['#0a0a0a', '#7a8b6a', '#d8d0c4'] },
+  { id: 'light',         nombre: 'Claro',         preview: ['#f5f7fa', '#2563eb', '#1e293b'] },
+  { id: 'vscode',        nombre: 'VS Code',       preview: ['#1e1e1e', '#007acc', '#d4d4d4'] },
+  { id: 'dracula',       nombre: 'Dracula',       preview: ['#282a36', '#bd93f9', '#f8f8f2'] },
+  { id: 'nord',          nombre: 'Nord',          preview: ['#2e3440', '#88c0d0', '#eceff4'] },
+  { id: 'tokyo',         nombre: 'Tokyo Night',   preview: ['#1a1b26', '#7aa2f7', '#c0caf5'] },
+  { id: 'catppuccin',    nombre: 'Catppuccin',    preview: ['#1e1e2e', '#89b4fa', '#cdd6f4'] },
+  { id: 'onedark',       nombre: 'One Dark',      preview: ['#282c34', '#61afef', '#abb2bf'] },
+  { id: 'unifi-light',   nombre: 'UniFi Light',   preview: ['#f7f9fc', '#0058cc', '#0a1e3a'] },
+  { id: 'synthwave',     nombre: 'Synthwave',     preview: ['#241b2f', '#f92aad', '#f0eff1'] },
+];
+
+const VALID_TEMAS = TEMAS.map(t => t.id);
+
+function aplicarTema(id) {
+  if (!VALID_TEMAS.includes(id)) id = 'tlou';
+  document.body.classList.remove(...VALID_TEMAS.map(t => 'theme-' + t));
+  document.body.classList.add('theme-' + id);
+  localStorage.setItem('tema', id);
+  // Guardar en Supabase (settings) para sync entre dispositivos
+  try {
+    api('/api/settings', { method: 'PUT', body: JSON.stringify({ tema: id }) });
+  } catch (e) {}
+  renderTemasGrid();
+}
+
+function renderTemasGrid() {
+  const grid = document.getElementById('temasGrid');
+  if (!grid) return;
+  const actual = localStorage.getItem('tema') || 'tlou';
+  grid.innerHTML = TEMAS.map(t => {
+    const activo = t.id === actual;
+    return '<div class="tema-card' + (activo ? ' activo' : '') + '" data-tema="' + t.id + '">' +
+      '<div class="tema-preview">' +
+        '<div class="seg" style="background:' + t.preview[0] + ';"></div>' +
+        '<div class="seg" style="background:' + t.preview[1] + ';"></div>' +
+        '<div class="seg" style="background:' + t.preview[2] + ';"></div>' +
+      '</div>' +
+      '<div class="tema-nombre">' + t.nombre + '</div>' +
+    '</div>';
+  }).join('');
+  grid.querySelectorAll('.tema-card').forEach(card => {
+    card.addEventListener('click', () => {
+      aplicarTema(card.dataset.tema);
+      showToast('Tema: ' + TEMAS.find(t => t.id === card.dataset.tema).nombre);
+    });
+  });
+}
+
+// ============================================================
+// DEFAULT TAREAS
 // ============================================================
 const DEFAULT_TAREAS = {
   manana: [
@@ -593,16 +758,12 @@ function formatLong(d) {
 function getTareasPorSeccion(sec) {
   return DB.tareas.filter(t => t.section === sec).sort((a, b) => (a.position || 0) - (b.position || 0));
 }
-function totalItems() {
-  return DB.tareas.length || 0;
-}
+function totalItems() { return DB.tareas.length || 0; }
 function dayCompleted(key) {
   const day = DB.days[key];
   if (!day) return 0;
   let c = 0;
-  for (const t of DB.tareas) {
-    if (day[t.id]) c++;
-  }
+  for (const t of DB.tareas) { if (day[t.id]) c++; }
   return c;
 }
 function dayPercent(key) {
@@ -862,6 +1023,8 @@ function renderAjustes() {
   if (s.studyDur) document.getElementById('setStudyDur').value = s.studyDur;
   if (s.workStart) document.getElementById('setWorkStart').value = s.workStart;
   if (s.workEnd) document.getElementById('setWorkEnd').value = s.workEnd;
+  renderTemasGrid();
+  actualizarAmbienteUI();
 }
 function setupSettings() {
   const map = { setWake: 'wake', setSleep: 'sleep', setStudy: 'study', setStudyDur: 'studyDur', setWorkStart: 'workStart', setWorkEnd: 'workEnd' };
@@ -877,6 +1040,16 @@ function setupSettings() {
       } catch (e) { showToast('Error'); }
     });
   });
+
+  // Selector de modo de ambiente
+  const sel = document.getElementById('ambModeSelect');
+  if (sel) {
+    sel.addEventListener('change', () => {
+      const m = sel.value;
+      if (window.Ambiente) window.Ambiente.setModo(m);
+      actualizarAmbienteUI();
+    });
+  }
 }
 
 // ============================================================
@@ -987,6 +1160,9 @@ function showToast(msg) {
 }
 
 async function init() {
+  // Aplicar tema guardado localmente primero (para evitar flash)
+  aplicarTema(localStorage.getItem('tema') || 'tlou');
+
   try {
     const [days, mercado, notas, settings, tareas] = await Promise.all([
       api('/api/days'), api('/api/mercado'), api('/api/notas'), api('/api/settings'), api('/api/tareas'),
@@ -997,7 +1173,12 @@ async function init() {
     DB.settings = settings || {};
     DB.tareas = tareas || [];
 
-    // Si no hay tareas, sembrar las por defecto
+    // Si el server tiene un tema guardado, úsalo
+    if (DB.settings.tema && VALID_TEMAS.includes(DB.settings.tema)) {
+      aplicarTema(DB.settings.tema);
+    }
+
+    // Sembrar tareas por defecto si no hay
     if (DB.tareas.length === 0) {
       for (const sec of ['manana', 'trabajo', 'tarde', 'noche']) {
         for (const t of DEFAULT_TAREAS[sec]) {
@@ -1012,6 +1193,7 @@ async function init() {
       }
     }
 
+    // Sembrar mercado por defecto
     if (DB.mercado.length === 0) {
       for (const item of DEFAULT_MERCADO) {
         try {
@@ -1053,11 +1235,11 @@ async function init() {
   });
   setupNotas();
   setupSettings();
-  setupAmbiente();
 
   updateHeader();
   renderHoy();
   renderCal();
+  actualizarAmbienteUI();
 
   setInterval(() => {
     const sub = document.getElementById('subToday');
@@ -1070,7 +1252,7 @@ async function init() {
 }
 
 // ============================================================
-// AMBIENTE TLOU · A micelio, B cordyceps, C ambiente
+// AMBIENTE TLOU · independiente del tema
 // ============================================================
 (function initAmbiente() {
   const canvas = document.getElementById('ambienteCanvas');
@@ -1078,8 +1260,8 @@ async function init() {
   const ctx = canvas.getContext('2d');
 
   const MODOS = ['off', 'A', 'B', 'C'];
-  let modo = localStorage.getItem('amb_modo') || 'A';
-  if (!MODOS.includes(modo)) modo = 'A';
+  let modo = localStorage.getItem('amb_modo') || 'off';
+  if (!MODOS.includes(modo)) modo = 'off';
 
   let racha = 0;
   let rachaAnimada = 0;
@@ -1110,18 +1292,13 @@ async function init() {
     regenerar();
   }
 
-  // ------------------------------------------------------------
-  // A · MICELIO (fibras ramificadas irregulares, esquina sup-izq)
-  // ------------------------------------------------------------
   function generarMicelio() {
     setSemilla(Math.floor(rachaAnimada) * 100 + 13);
     const nivel = Math.min(6, 1 + Math.floor(rachaAnimada / 10));
     const ramas = [];
     const origen = { x: -20, y: -20 };
-
     function rama(x, y, ang, len, grosor, niv) {
       if (niv > nivel || len < 6) return;
-      // 3 puntos con curvatura irregular
       const segmentos = 3;
       let cx = x, cy = y, ca = ang;
       for (let s = 0; s < segmentos; s++) {
@@ -1132,7 +1309,6 @@ async function init() {
         cx = x2; cy = y2;
         ca += (rng() - 0.5) * 0.6;
       }
-      // Bifurcaciones irregulares
       const numHijas = rng() > 0.5 ? 2 : 3;
       for (let i = 0; i < numHijas; i++) {
         const nuevaAng = ca + (rng() - 0.5) * 1.4;
@@ -1140,17 +1316,13 @@ async function init() {
         const nuevoGrosor = Math.max(0.4, grosor * 0.6);
         rama(cx, cy, nuevaAng, nuevaLen, nuevoGrosor, niv + 1);
       }
-      // Pequeñas fibras laterales
       if (rng() > 0.6) {
         rama(cx, cy, ca + (rng() - 0.5) * 1.8, len * 0.35, Math.max(0.3, grosor * 0.4), niv + 1);
       }
     }
-
     rama(origen.x, origen.y, Math.PI * 0.28, Math.min(ancho, alto) * 0.32, 2.6, 0);
     rama(origen.x, origen.y, Math.PI * 0.05, Math.min(ancho, alto) * 0.28, 2.2, 0);
     rama(origen.x, origen.y, Math.PI * 0.5, Math.min(ancho, alto) * 0.24, 2.0, 0);
-
-    // Esporas flotantes
     const esporas = [];
     const numEsporas = Math.min(80, 20 + rachaAnimada * 2);
     for (let i = 0; i < numEsporas; i++) {
@@ -1161,49 +1333,33 @@ async function init() {
         alpha: 0.2 + rng() * 0.4
       });
     }
-
     estructura = { tipo: 'micelio', ramas, esporas };
   }
 
-  // ------------------------------------------------------------
-  // B · CORDYCEPS (racimos de hongos brotando)
-  // ------------------------------------------------------------
   function generarCordyceps() {
     setSemilla(Math.floor(rachaAnimada) * 100 + 29);
     const numRacimos = Math.min(10, 2 + Math.floor(rachaAnimada / 8));
     const racimos = [];
-
     for (let r = 0; r < numRacimos; r++) {
-      // Distribuir alrededor de los bordes
       const lado = Math.floor(rng() * 4);
       let bx, by;
-      if (lado === 0) { bx = rng() * ancho; by = -10; }             // arriba
-      else if (lado === 1) { bx = rng() * ancho; by = alto + 10; }   // abajo
-      else if (lado === 2) { bx = -10; by = rng() * alto; }          // izq
-      else { bx = ancho + 10; by = rng() * alto; }                   // der
-
+      if (lado === 0) { bx = rng() * ancho; by = -10; }
+      else if (lado === 1) { bx = rng() * ancho; by = alto + 10; }
+      else if (lado === 2) { bx = -10; by = rng() * alto; }
+      else { bx = ancho + 10; by = rng() * alto; }
       const numHongos = 3 + Math.floor(rng() * 5);
       const hongos = [];
       for (let h = 0; h < numHongos; h++) {
         const ang = Math.atan2(alto / 2 - by, ancho / 2 - bx) + (rng() - 0.5) * 0.8;
         const len = 20 + rng() * 50;
         const capT = 6 + rng() * 8;
-        hongos.push({
-          x: bx, y: by,
-          ang, len, capT,
-          curvatura: (rng() - 0.5) * 0.4,
-          fase: rng() * Math.PI * 2
-        });
+        hongos.push({ x: bx, y: by, ang, len, capT, curvatura: (rng() - 0.5) * 0.4, fase: rng() * Math.PI * 2 });
       }
       racimos.push({ hongos });
     }
-
     estructura = { tipo: 'cordyceps', racimos };
   }
 
-  // ------------------------------------------------------------
-  // C · AMBIENTE (moho, manchas, esporas, penumbra)
-  // ------------------------------------------------------------
   function generarAmbiente() {
     setSemilla(Math.floor(rachaAnimada) * 100 + 47);
     const manchas = [];
@@ -1219,13 +1375,8 @@ async function init() {
         const r = radio * (0.6 + rng() * 0.6);
         puntos.push({ x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r });
       }
-      manchas.push({
-        puntos,
-        alpha: 0.05 + rng() * 0.12,
-        color: rng() > 0.5 ? [60, 70, 50] : [50, 45, 35]
-      });
+      manchas.push({ puntos, alpha: 0.05 + rng() * 0.12, color: rng() > 0.5 ? [60, 70, 50] : [50, 45, 35] });
     }
-
     const esporas = [];
     const numEsporas = Math.min(120, 40 + rachaAnimada * 3);
     for (let i = 0; i < numEsporas; i++) {
@@ -1236,18 +1387,10 @@ async function init() {
         alpha: 0.15 + rng() * 0.35
       });
     }
-
-    // Vetas oscuras
     const vetas = [];
     for (let i = 0; i < 6; i++) {
-      const y0 = rng() * alto;
-      vetas.push({
-        y: y0,
-        h: 10 + rng() * 40,
-        alpha: 0.03 + rng() * 0.06
-      });
+      vetas.push({ y: rng() * alto, h: 10 + rng() * 40, alpha: 0.03 + rng() * 0.06 });
     }
-
     estructura = { tipo: 'ambiente', manchas, esporas, vetas };
   }
 
@@ -1258,18 +1401,13 @@ async function init() {
     else if (modo === 'C') generarAmbiente();
   }
 
-  // ------------------------------------------------------------
-  // DIBUJAR
-  // ------------------------------------------------------------
   function drawMicelio() {
     if (!estructura) return;
     const { ramas, esporas } = estructura;
     const colorBase = [200, 210, 180];
-    const alphaBase = 0.5;
-
     ramas.forEach(r => {
       const p = r.niv / 6;
-      const alpha = alphaBase * (1 - p * 0.55);
+      const alpha = 0.5 * (1 - p * 0.55);
       ctx.save();
       ctx.strokeStyle = 'rgba(' + colorBase[0] + ',' + colorBase[1] + ',' + colorBase[2] + ',' + alpha + ')';
       ctx.lineWidth = r.grosor;
@@ -1280,10 +1418,8 @@ async function init() {
       ctx.stroke();
       ctx.restore();
     });
-
     esporas.forEach(e => {
-      e.x += e.vx;
-      e.y += e.vy;
+      e.x += e.vx; e.y += e.vy;
       if (e.y < -10) { e.y = alto + 10; e.x = Math.random() * ancho; }
       if (e.x < -10) e.x = ancho + 10;
       if (e.x > ancho + 10) e.x = -10;
@@ -1300,15 +1436,12 @@ async function init() {
   function drawCordyceps() {
     if (!estructura) return;
     const { racimos } = estructura;
-
     racimos.forEach(rac => {
       rac.hongos.forEach(h => {
         const sway = Math.sin(tiempo * 0.8 + h.fase) * 0.05;
         const a = h.ang + sway;
         const x2 = h.x + Math.cos(a) * h.len;
         const y2 = h.y + Math.sin(a) * h.len;
-
-        // Tallo
         ctx.save();
         ctx.strokeStyle = 'rgba(180, 175, 155, 0.35)';
         ctx.lineWidth = 1.6;
@@ -1320,8 +1453,6 @@ async function init() {
         ctx.quadraticCurveTo(cx, cy, x2, y2);
         ctx.stroke();
         ctx.restore();
-
-        // Sombrero
         ctx.save();
         const grad = ctx.createRadialGradient(x2, y2, 0, x2, y2, h.capT);
         grad.addColorStop(0, 'rgba(140, 150, 110, 0.5)');
@@ -1338,16 +1469,12 @@ async function init() {
   function drawAmbiente() {
     if (!estructura) return;
     const { manchas, esporas, vetas } = estructura;
-
-    // Vetas horizontales sutiles (como humedad)
     vetas.forEach(v => {
       ctx.save();
       ctx.fillStyle = 'rgba(30, 25, 20, ' + v.alpha + ')';
       ctx.fillRect(0, v.y, ancho, v.h);
       ctx.restore();
     });
-
-    // Manchas de moho (polígonos suaves)
     manchas.forEach(m => {
       ctx.save();
       const c = m.color;
@@ -1367,11 +1494,8 @@ async function init() {
       ctx.fill();
       ctx.restore();
     });
-
-    // Esporas
     esporas.forEach(e => {
-      e.x += e.vx;
-      e.y += e.vy;
+      e.x += e.vx; e.y += e.vy;
       if (e.y < -10) { e.y = alto + 10; e.x = Math.random() * ancho; }
       if (e.x < -10) e.x = ancho + 10;
       if (e.x > ancho + 10) e.x = -10;
@@ -1388,7 +1512,6 @@ async function init() {
   function loop() {
     if (!animId) return;
     tiempo += 0.016;
-
     if (Math.abs(rachaAnimada - racha) > 0.1) {
       const antes = Math.round(rachaAnimada);
       rachaAnimada += (racha - rachaAnimada) * 0.05;
@@ -1399,12 +1522,10 @@ async function init() {
       rachaAnimada = racha;
       regenerar();
     }
-
     ctx.clearRect(0, 0, ancho, alto);
     if (modo === 'A') drawMicelio();
     else if (modo === 'B') drawCordyceps();
     else if (modo === 'C') drawAmbiente();
-
     animId = requestAnimationFrame(loop);
   }
 
@@ -1414,9 +1535,12 @@ async function init() {
     if (modo === 'off' || racha <= 0) {
       ctx.clearRect(0, 0, ancho, alto);
       canvas.classList.remove('activa');
+      document.body.classList.remove('amb-A', 'amb-B', 'amb-C');
       return;
     }
     canvas.classList.add('activa');
+    document.body.classList.remove('amb-A', 'amb-B', 'amb-C');
+    document.body.classList.add('amb-' + modo);
     if (rachaAnimada === 0) rachaAnimada = Math.max(0.5, racha - 2);
     animId = requestAnimationFrame(loop);
   }
@@ -1437,57 +1561,41 @@ async function init() {
     setModo(m) {
       modo = m;
       localStorage.setItem('amb_modo', m);
-      document.body.classList.remove('amb-A', 'amb-B', 'amb-C');
-      if (m !== 'off') document.body.classList.add('amb-' + m);
+      start();
+    },
+    toggle() {
+      if (modo === 'off') {
+        modo = 'A';
+      } else {
+        modo = 'off';
+      }
+      localStorage.setItem('amb_modo', modo);
       start();
     },
     getModo() { return modo; }
   };
-
-  document.body.classList.remove('amb-A', 'amb-B', 'amb-C');
-  if (modo !== 'off') document.body.classList.add('amb-' + modo);
 })();
 
-function setupAmbiente() {
-  const menu = document.getElementById('ambMenu');
-  const badge = document.getElementById('ambBadge');
-
-  function updateMenu() {
-    const m = window.Ambiente.getModo();
-    menu.querySelectorAll('.amb-menu-item').forEach(el => {
-      el.classList.toggle('activo', el.dataset.modo === m);
-    });
-    if (m === 'off') {
-      badge.style.display = 'none';
-    } else {
-      badge.style.display = 'flex';
-      badge.textContent = m;
-    }
-    document.getElementById('ambBtn').classList.toggle('activo', m !== 'off');
+function toggleAmbiente() {
+  if (window.Ambiente) {
+    window.Ambiente.toggle();
+    actualizarAmbienteUI();
   }
-
-  menu.querySelectorAll('.amb-menu-item').forEach(el => {
-    el.addEventListener('click', () => {
-      window.Ambiente.setModo(el.dataset.modo);
-      updateMenu();
-      menu.classList.remove('activo');
-    });
-  });
-
-  updateMenu();
-
-  document.addEventListener('click', (e) => {
-    const menuEl = document.getElementById('ambMenu');
-    const btn = document.getElementById('ambBtn');
-    if (menuEl.classList.contains('activo') && !menuEl.contains(e.target) && !btn.contains(e.target)) {
-      menuEl.classList.remove('activo');
-    }
-  });
 }
 
-function toggleAmbMenu(event) {
-  if (event) event.stopPropagation();
-  document.getElementById('ambMenu').classList.toggle('activo');
+function actualizarAmbienteUI() {
+  const modo = window.Ambiente ? window.Ambiente.getModo() : 'off';
+  const btn = document.getElementById('ambToggleBtn');
+  const sel = document.getElementById('ambModeSelect');
+  if (btn) {
+    btn.textContent = modo === 'off' ? 'Apagado' : 'Encendido';
+    btn.classList.toggle('activo', modo !== 'off');
+  }
+  if (sel) {
+    sel.disabled = modo === 'off';
+    sel.style.opacity = modo === 'off' ? '0.5' : '1';
+    if (modo !== 'off') sel.value = modo;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
